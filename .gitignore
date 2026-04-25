@@ -1,0 +1,22 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build folders
+Debug/
+Release/
+x64/
+
+# SFML (DO NOT PUSH LIBRARIES)
+include/
+lib/
+
+# Compiled files
+*.exe
+*.obj
+*.pdb
+*.ilk
+
+# Misc
+*.log
