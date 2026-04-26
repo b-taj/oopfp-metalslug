@@ -5,6 +5,7 @@
 #include "GameMode.h"
 #include "Character.h"
 #include "Camera.h"
+#include "Level.h"
 #include "HUD.h"
 #include "ScoreManager.h"
 #include "SoundManager.h"
@@ -41,7 +42,27 @@ private:
 	GameMode*		currentMode;		// active play mode (owned)
 	Character*		characters[4];		// Marco, Tarma, Eri, Fio (owned)
 	int			activeCharIdx;		// index into characters[]
+	
+	Projectile*		projectiles[512];	// Fixed-size array (No STL)
+	int				projectileCount;
+
+	Enemy*          enemies[64];      // Array for enemies
+	int             enemyCount;
+
+	sf::Texture     bgTex;
+	sf::Sprite      bgSprite;
+
+	bool            isPaused;
+	sf::Font        pauseFont;
+	sf::Text        pauseText;
+
+	int             totalScore;
+	sf::Text        scoreText;
+	sf::Text        hpText;
+	sf::Text        nameText;
+
 	Camera			camera;
+	Level           level;
 	HUD			hud;
 	ScoreManager		scoreManager;
 	SoundManager		soundManager;

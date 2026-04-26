@@ -23,7 +23,11 @@ public:
 
 	int				getScore();
 	void			draw(sf::RenderWindow& window);
-	sf::FloatRect	getBounds();
+	float			getX() { return x; }
+	float			getY() { return y; }
+	void			loadTexture(const char* filename);
+	void			setPosition(float nx, float ny);
+	bool			getIsAlive() { return isAlive; }
 
 protected:
 	int			hp;
@@ -43,6 +47,7 @@ protected:
 class RebelSoldier : public Enemy
 {
 public:
+	RebelSoldier(float sx, float sy);
 	void	update(float dt) override;
 	void	takeDamage(int dmg) override;
 	void	attack(Character* target) override;

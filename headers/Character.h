@@ -1,49 +1,57 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include <SFML/Window.hpp>
 #include "Enums.h"
 #include "Weapon.h"
 #include "Grenade.h"
 
 class Vehicle;
+class Weapon;
+class Grenade;
 class Enemy;
-
-// Character.h -- Abstract base for all four playable characters + FusionCompanion.
-// Sub-classes override the pure-virtual methods to apply character-specific
-// stat modifiers, special powers, and per-frame update logic.
-// Switching between characters (key Z) is managed by Game::switchCharacter().
 
 class Character
 {
 public:
+	Character();
+	Character(float startX, float startY);
 	virtual ~Character() = default;
 
-	// ── pure virtual -- implemented by each character sub-class ──────────
 	virtual void	update(float dt) = 0;
 	virtual void	activateSpecialPower() = 0;
-	virtual float	getFireRate() = 0;		// shots/s including character buffs
-	virtual int		getGrenadeDamage() = 0;		// final grenade HP value
+	virtual float	getFireRate() = 0;
+	virtual int		getGrenadeDamage() = 0;
 
-	// ── movement & actions ───────────────────────────────────────────────
+	void			setPosition(float newX, float newY);
+	void			setSpeed(float accel, float maxSpd);
+	void			setSpriteScale(float scaleX, float scaleY);
+	void			loadTexture(const char* filename);
+
+	virtual void	throwGrenade(float angle) {}
+	virtual void	meleeAttack() {}
+	virtual void	pickupWeapon(Weapon* weapon) {}
+	virtual float	getMeleeRange() { return 100.0f; }
+
 	void			moveLeft();
 	void			moveRight();
+	void			moveUp();
+	void			moveDown();
+	void			updateMovement(float dt);
+	void			resolveGround(char** lvl, int height, int width, int cellSize);
 	void			jump();
-	void			shoot(float angle);		// calls currentWeapon->fire()
-	void			throwGrenade(float angle);
-	void			meleeAttack();
-	void			pickupWeapon(Weapon* weapon);
-	void			boardVehicle(Vehicle* vehicle);	// sets currentVehicle (aggregation)
+	Projectile*		shoot(float angle);
+	void			boardVehicle(Vehicle* vehicle);
 	void			exitVehicle();
 
-	// ── health & state ───────────────────────────────────────────────────
-	void			takeDamage();		// advances damageLevel; triggers CharacterState transitions
+	void			takeDamage();
 	void			die();
-	void			respawn();			// restore hp; lose one life; reset position
+	void			respawn();
 	void			applyState(CharacterState newState);
 
-	// ── utility ──────────────────────────────────────────────────────────
-	float			getMeleeRange();
 	void			draw(sf::RenderWindow& window);
-	sf::FloatRect	getBounds();
+	float			getX() { return x; }
+	float			getY() { return y; }
+	int				getHp() { return hp; }
 
 protected:
 	int				hp;
@@ -52,31 +60,44 @@ protected:
 	float			y;
 	float			velocityX;
 	float			velocityY;
+	float			acceleration;
+	float			maxSpeed;
 	float			speed;
-	int				lives;				// 2 per character; 0 -> cannot switch back
-	int				grenadeCount;			// base = 10; varies per character
-	Weapon*			currentWeapon;			// equipped special weapon (nullable)
-	Pistol			pistol;				// always available; infinite ammo
-	Vehicle*		currentVehicle;			// null when on foot (aggregated, not owned)
+	float			gravity;
+	float			terminalVelocity;
+	float			jumpStrength;
+	bool			onGround;
+	int				lives;
+	int				grenadeCount;
+	Weapon*			currentWeapon;
+	Pistol			pistol;
+	Vehicle*		currentVehicle;
 	CharacterState	state;
-	float			stateTimer;				// counts down UNDEAD/MUMMY duration
-	int				damageLevel;			// 0=fine | 1=injured | 2=critical
+	float			stateTimer;
+	int				damageLevel;
 	sf::Sprite		sprite;
 	sf::Texture		texture;
 	bool			facingRight;
 	bool			isJumping;
+	float			aimAngle;
+
+	// Animation Timer for procedural bobbing
+	float           walkTimer;
 };
 
-// Pure infantry fighter. +25% fire rate, piercing melee, -2 grenades.
-// Special power: fire simultaneously in both directions for 10 seconds.
-class Marco : public Character
+class PlayerMarco : public Character
 {
 public:
+	PlayerMarco();
+	PlayerMarco(float startX, float startY);
 	void	update(float dt) override;
-	void	activateSpecialPower() override;	// enables dualFireActive for 10 s
-	float	getFireRate() override;			// base x 1.25
-	int		getGrenadeDamage() override;		// base - 2 grenades
-	void	meleeAttack();					// overridden: pierces shielded opponents
+	void	activateSpecialPower() override;
+	float	getFireRate() override;
+	int		getGrenadeDamage() override;
+	void	meleeAttack() override;
+	void	throwGrenade(float angle) override;
+	void	pickupWeapon(Weapon* weapon) override;
+	float	getMeleeRange() override;
 
 private:
 	bool	dualFireActive;
@@ -84,75 +105,54 @@ private:
 	bool	canPierceShield;
 };
 
-// Mediocre on foot, powerful in vehicles. -20% foot speed/HP.
-// Special power: full immunity (self + vehicle) for 20 seconds.
-class Tarma : public Character
+class PlayerTarma : public Character
 {
 public:
+	PlayerTarma();
+	PlayerTarma(float startX, float startY);
 	void	update(float dt) override;
-	void	activateSpecialPower() override;	// enables immunityActive for 20 s
+	void	activateSpecialPower() override;
 	float	getFireRate() override;
 	int		getGrenadeDamage() override;
-	float	getVehicleFireRate();			// vehicle fire rate x 1.25
-	float	getVehicleDurability();			// vehicle max HP x 1.20
-	void	onVehicleDestroyed();			// Tarma survives vehicle destruction
+	float	getVehicleFireRate();
+	float	getVehicleDurability();
+	void	onVehicleDestroyed();
 
 private:
 	bool	immunityActive;
 	float	immunityTimer;
 };
 
-// Grenade specialist. Double grenades, +50% blast radius, no melee, -20% fire rate.
-// Special power: 2 grenades for cost of 1 for 10 s (second grenade lands 2 blocks further).
-class Eri : public Character
+class PlayerEri : public Character
 {
 public:
+	PlayerEri();
+	PlayerEri(float startX, float startY);
 	void	update(float dt) override;
-	void	activateSpecialPower() override;	// enables doubleGrenadeActive for 10 s
-	void	throwGrenade(float angle);			// overridden: throws 2 when power is active
-	float	getFireRate() override;			// base x 0.80
-	int		getGrenadeDamage() override;		// blastRadius x 1.50
+	void	activateSpecialPower() override;
+	void	throwGrenade(float angle) override;
+	float	getFireRate() override;
+	int		getGrenadeDamage() override;
 
 private:
 	bool	doubleGrenadeActive;
 	float	doubleGrenadeTimer;
-	float	blastRadius;		// effective radius (base x 1.5)
+	float	blastRadius;
 };
 
-// Weapon master. +50% ammo on pickup, +10% fire rate, -25% melee, -2 grenades.
-// Special power: +100% fire rate (SUPERCHARGED) for 10 seconds.
-class Fio : public Character
+class PlayerFio : public Character
 {
 public:
+	PlayerFio();
+	PlayerFio(float startX, float startY);
 	void	update(float dt) override;
-	void	activateSpecialPower() override;	// enables superchargeActive for 10 s
-	void	pickupWeapon(Weapon* weapon);		// overridden: grants +50% ammo
-	float	getFireRate() override;			// base x 1.10 (x 2.10 while supercharged)
-	int		getGrenadeDamage() override;		// -2 from base count
-	float	getMeleeRange();				// overridden: -25% melee damage
+	void	activateSpecialPower() override;
+	void	pickupWeapon(Weapon* weapon) override;
+	float	getFireRate() override;
+	int		getGrenadeDamage() override;
+	float	getMeleeRange() override;
 
 private:
 	bool	superchargeActive;
 	float	superchargeTimer;
-};
-
-// AI-controlled companion; spawned once per level (30 s survival / 3-min cooldown in campaign).
-// Stats are averaged from 2-4 fused characters; all buffs and weaknesses are inherited.
-class FusionCompanion : public Character
-{
-public:
-	void	update(float dt) override;				// drives followAndAttack() each frame
-	void	activateSpecialPower() override;
-	float	getFireRate() override;				// averaged across fusedChars
-	int		getGrenadeDamage() override;
-	void	setFusedCharacters(std::vector<Character*> chars);	// call before spawning
-
-private:
-	std::vector<Character*>	fusedChars;
-	bool					isImmortal;
-	float					activeTimer;		// seconds until despawn
-	Enemy*					target;			// current attack target (aggregated)
-
-	void	averageStats();		// recompute speed/hp/fireRate from fusedChars
-	void	followAndAttack();		// pursuit-and-fire AI tick
 };

@@ -15,8 +15,9 @@ public:
 
 	// Called by collision detection when this projectile hits a target.
 	void			onHit();
-
-	sf::FloatRect	getBounds();
+	void			loadTexture(const char* filename);
+	void			setTextureRect(int left, int top, int width, int height);
+	void			setPosition(float nx, float ny);
 
 	// ── data ─────────────────────────────────────────────────────────────
 	float			x;

@@ -1,30 +1,16 @@
 #pragma once
 #include <SFML/Audio.hpp>
 
-
-// SoundManager.h -- Central audio controller.
-//
-// Echo Chambers feature: when the player enters an aquatic biome,
-// applyLowpassFilter() decomposes audio into discrete frequencies via FFT
-// and removes the high-frequency components at runtime to simulate muffling.
-// Pre-prepared muffled sounds are NOT used -- the filter runs live.
+// SoundManager.h -- Central audio controller using allowed SFML objects.
 
 class SoundManager
 {
 public:
-	void	play(const std::string& id);			// trigger one-shot SFX by id
-	void	playMusic(const std::string& file);		// start looping background music
-	void	setUnderwater(bool underwater);		// toggle low-pass filter mode
+	SoundManager() {}
 
-	// Apply runtime FFT low-pass filter: removes high-frequency components.
-	void	applyLowpassFilter(sf::SoundBuffer& buffer);
-
-	// Decompose a PCM buffer into its frequency components (FFT implementation).
-	std::vector<float>	decomposeFrequencies(std::vector<float> buffer);
-
+	void	playMusic(const char* file) { bgMusic.openFromFile(file); bgMusic.setVolume(50.0f); bgMusic.setLoop(true); }
+	
 private:
-	std::vector<sf::SoundBuffer>	buffers;
-	std::vector<sf::Sound>		sounds;
+	// Since std::vector is forbidden, we will handle a few fixed buffers if needed
 	sf::Music			bgMusic;
-	bool				isUnderwater;
 };

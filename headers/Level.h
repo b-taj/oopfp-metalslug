@@ -1,56 +1,45 @@
 #pragma once
 #include <SFML/Graphics.hpp>
-
 #include "Block.h"
 
-class Biome;
-class Enemy;
-class EnemyVehicle;
-class Vehicle;
-class Collectible;
-class Camera;
+#include "Enemy.h"
+#include "Projectile.h"
 
-// Level.h -- Owns the 2-D block grid and all entity lists for one stage.
-// Survival levels: 150-250 blocks wide, 20-60 blocks tall, fixed enemy positions.
-// Campaign level: effectively infinite (chunks generated on demand).
+class Camera;
 
 class Level
 {
 public:
-	void		update(float dt);
-	void		draw(sf::RenderWindow& window, Camera& cam);
+	Level();
+	~Level();
 
-	// Returns block at grid position (x,y); nullptr if out of range.
-	Block*		getBlock(int x, int y);
+	void	loadMockLevel();
 
-	// Remove all destructible blocks within blast radius of grid cell (x, y).
-	void		destroyBlock(int x, int y, int radius);
+	void	update(float dt, int& score); // Pass score by ref to update it on kills
+	void	draw(sf::RenderWindow& window, Camera& camera);
 
-	// Fill any crater (width <= 3 blocks, depth >= 1 block) exposed to rain.
-	void		fillCraterWithWater();
+	void	addProjectile(Projectile* p);
 
-	// Return the Biome containing grid column x.
-	Biome*		getBiomeAt(int x);
-
-	// Add a new enemy to the active entity list at world position (x, y).
-	void		spawnEnemy(Enemy* enemy, int x, int y);
-
-	// Begin a randomised rain event (duration and interval are random).
-	void		triggerRain();
-
-	// True when Campaign kill quotas are met (unused in Survival; checked per level).
-	bool		isComplete();
+	// Getters for Character collision
+	char**	getTileGrid() { return grid; }
+	int		getHeight() { return height; }
+	int		getWidth() { return width; }
+	int		getCellSize() { return cellSize; }
 
 private:
-	Block**					blocks;			// [height][width] heap-allocated grid
-	int					width;
-	int					height;
-	std::vector<Biome*>		biomes;			// owned; ordered left to right
-	std::vector<Enemy*>		enemies;		// active enemy list (aggregated)
-	std::vector<EnemyVehicle*>	enemyVehicles;
-	std::vector<Collectible*>	collectibles;
-	std::vector<Vehicle*>		playerVehicles;	// parked vehicles available to board
-	int					seaLevel;		// fixed grid row for AquaticBiome surface
-	bool					isRaining;
-	float					rainTimer;
+	void    checkCollisions(int& score);
+
+	char**		grid;
+	int			height;
+	int			width;
+	int			cellSize;
+
+	Enemy*      enemies[64];
+	int         enemyCount;
+
+	Projectile* projectiles[512];
+	int         projectileCount;
+
+	sf::Texture	blackTex, whiteTex;
+	sf::Sprite	blackSprite, whiteSprite;
 };
