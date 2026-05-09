@@ -22,7 +22,11 @@ public:
 protected:
 	int			maxHp;			// 30 for all standard boss phases
 	std::string	minionType;		// enemy class name spawned as minions
-	float		minionTimer;		// seconds between minion batch spawns
+	float		minionTimer;
+	void update(float dt);
+	void takeDamage(int dmg);
+	void draw(sf::RenderWindow& window);
+	// seconds between minion batch spawns
 };
 
 // Ground boss. 30 HP. Missile turret on top + flamethrower on bottom + fire-bomb grenades.
@@ -92,7 +96,7 @@ private:
 	IronNokana*			groundBoss;
 	HairbusterRiberts*	aerialBoss;
 	SeaSatan*			aquaticBoss;
-	BossPhase			currentPhase;
+	//BossPhase			currentPhase;
 	float				phaseTimer;		// counts down to next transition (10-15 s)
 	int					groundHp;
 	int					aerialHp;

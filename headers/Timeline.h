@@ -1,5 +1,7 @@
 #pragma once
 #include "GameState.h"
+#include <string>
+#include <vector>
 
 // Timeline.h -- Implements the 'Forks of Fate' feature.
 // Frames are recorded in a 10-second ring buffer. Key R rewinds frame-by-frame
@@ -7,6 +9,7 @@
 // timeline branches at any node and persist the tree across sessions.
 
 // Conditions at the moment of player death; used by ScoreManager / Death Compositor.
+
 struct DeathFingerprint
 {
 	int			health;
@@ -52,3 +55,4 @@ private:
 	std::vector<GameState>		frameBuffer;	// circular 10-second buffer (600 frames @ 60 fps)
 	int				maxFrames;		// = 600
 };
+
