@@ -1,34 +1,35 @@
 #pragma once
-#include <SFML/Graphics.hpp>
 #include "Enums.h"
+#include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
 
-// Block.h -- A single 64x64 pixel voxel tile in the level grid.
-// Destructible blocks are removed by blast radius; the indestructible bottom
-// row survives all explosions. Water blocks fill craters exposed to rain.
+/**
+ * Block.h -- A single grid tile.
+ * Renders shared textures and handles destruction/flooding logic.
+ */
 
 class Block
 {
 public:
-	void			draw(sf::RenderWindow& window);
+	Block();
+	
+	void	init(int gx, int gy, BlockType t, sf::Texture* tex);
+	void	draw(sf::RenderWindow& w, float camOX, float camOY);
 
-	// Remove from grid if isDestructible is true.
-	void			destroy();
+	void	destroy();
+	void	flood();
 
-	// Convert to WATER tile; called by Level::fillCraterWithWater().
-	void			flood();
+	sf::FloatRect getBounds() const;
 
-	sf::FloatRect	getBounds();
-
-	// ── data ─────────────────────────────────────────────────────────────
-	int			x;					// grid column
-	int			y;					// grid row
 	BlockType	type;
+	int			gridX, gridY;
 	bool		isDestructible;
-	bool		isIndestructible;		// true for bedrock bottom row
-	bool		isSolid;			// false for AIR and WATER
+	bool		isIndestructible;
 	bool		isWater;
+	bool		active;
 
 private:
 	sf::Sprite	sprite;
-	sf::Texture	texture;
+	sf::Texture* texture; // NOT owned
 };

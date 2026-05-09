@@ -1,39 +1,53 @@
 #include "../headers/Camera.h"
 
+// Implements a horizontal-only dead-zone camera system
+// Vertical scrolling is completely disabled (Locked to screen top)
 void Camera::update(float playerX, float playerY)
 {
-    // targetX and targetY aren't strictly needed for basic follow, 
-    // but we can use them for smooth lerping later.
     targetX = playerX;
     targetY = playerY;
 
-    // Keep player centered after they pass the middle of the screen (800px)
-    if (playerX > 800.0f) {
-        offsetX = playerX - 800.0f;
-    } else {
-        offsetX = 0.0f;
+    // Define Horizontal Dead-Zone Margin (Screen is 1600x900)
+    float hMargin = 500.0f; 
+
+    // Horizontal Dead-Zone Logic
+    if (playerX < offsetX + hMargin) {
+        offsetX = playerX - hMargin;
+    }
+    else if (playerX > offsetX + (1600.0f - hMargin)) {
+        offsetX = playerX - (1600.0f - hMargin);
     }
 
-    // Vertical scroll (optional, keeping at 0 for now unless player goes very high)
-    if (playerY < 300.0f) {
-        offsetY = playerY - 300.0f;
-    } else {
-        offsetY = 0.0f;
-    }
+    // VERTICAL LOCK: Completely disable vertical scrolling
+    offsetY = 0.0f;
+
+    // World Bound Clamping (Horizontal only)
+    if (offsetX < 0.0f) offsetX = 0.0f;
+    if (offsetX > (worldWidth - 1600.0f)) offsetX = (float)(worldWidth - 1600);
 }
 
+// Configures the world boundaries in pixels for clamping
+void Camera::setBounds(int w, int h)
+{
+    worldWidth = w;
+    worldHeight = h;
+}
+
+// Applies the current camera transformation to the render window
 void Camera::apply(sf::RenderWindow& window)
 {
-    // Since sf::View is not allowed, this method is a stub.
-    // Coordinate translation happens manually via getOffsetX().
     (void)window;
 }
 
+// Maps world-space coordinates to screen-space coordinates
 void Camera::worldToScreen(float worldX, float worldY, float& outX, float& outY)
 {
     outX = worldX - offsetX;
     outY = worldY - offsetY;
 }
 
+// Accessor for the horizontal screen offset
 float Camera::getOffsetX() { return offsetX; }
+
+// Accessor for the vertical screen offset
 float Camera::getOffsetY() { return offsetY; }

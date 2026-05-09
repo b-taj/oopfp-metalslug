@@ -1,130 +1,99 @@
 #include "../headers/Level.h"
-#include "../headers/Camera.h"
+#include "../headers/Constants.h"
+#include "../headers/Projectile.h"
+#include <cmath>
 
-Level::Level()
+Level::Level() 
+	: width(LEVEL_WIDTH), height(LEVEL_HEIGHT), cellSize(CELL_SIZE), 
+	  playerPtr(nullptr), seaLevel(16), isRaining(false), rainTimer(0.0f)
 {
-	cellSize = 64;
-	height = 14;
-	width = 110;
-	grid = new char*[height];
-	for (int i = 0; i < height; ++i) grid[i] = new char[width];
+	blocks = new Block*[height];
+	for (int i = 0; i < height; ++i) {
+		blocks[i] = new Block[width];
+	}
 
-	blackTex.loadFromFile("Sprites/blocks/stone.png");
-	whiteTex.loadFromFile("Sprites/blocks/grass_block_side.png");
-	blackSprite.setTexture(blackTex);
-	whiteSprite.setTexture(whiteTex);
+	stoneTex.loadFromFile("Sprites/blocks/stone.png");
 
-	enemyCount = 0;
-	for (int i = 0; i < 64; i++) enemies[i] = nullptr;
-	projectileCount = 0;
-	for (int i = 0; i < 512; i++) projectiles[i] = nullptr;
+	biomes[0] = new AerialBiome(0, 50);
+	biomes[1] = new PlainsBiome(51, 150);
+	biomes[2] = new AquaticBiome(151, 199);
 }
 
 Level::~Level()
 {
-	for (int i = 0; i < height; ++i) delete[] grid[i];
-	delete[] grid;
-	for (int i = 0; i < enemyCount; i++) if(enemies[i]) delete enemies[i];
-	for (int i = 0; i < projectileCount; i++) if(projectiles[i]) delete projectiles[i];
+	for (int i = 0; i < height; ++i) delete[] blocks[i];
+	delete[] blocks;
+	
+	for (int i = 0; i < 3; ++i) delete biomes[i];
 }
 
 void Level::loadMockLevel()
 {
-	for (int i = 0; i < height; ++i) {
-		for (int j = 0; j < width; ++j) {
-			if (i == 13) grid[i][j] = 'B';
-			else if (i == 10 && (j % 12 < 4)) grid[i][j] = 'W'; 
-			else if (i == 7 && (j % 12 > 6)) grid[i][j] = 'W';
-			else if (i == 4 && (j % 15 < 3)) grid[i][j] = 'W';
-			else grid[i][j] = ' ';
+	for (int y = 0; y < height; ++y) {
+		for (int x = 0; x < width; ++x) {
+			BlockType t = (y >= 15) ? BlockType::STONE : BlockType::AIR;
+			if (y == height - 1) t = BlockType::INDESTRUCTIBLE;
+			blocks[y][x].init(x, y, t, &stoneTex);
 		}
 	}
-	if (enemyCount < 64) enemies[enemyCount++] = new RebelSoldier(600.0f, 770.0f);
-	if (enemyCount < 64) enemies[enemyCount++] = new RebelSoldier(1500.0f, 770.0f);
-	if (enemyCount < 64) enemies[enemyCount++] = new RebelSoldier(2500.0f, 770.0f);
 }
 
-void Level::addProjectile(Projectile* p)
+void Level::update(float dt, ScoreManager& score)
 {
-	if (projectileCount < 512) projectiles[projectileCount++] = p;
-	else delete p;
+	if (playerPtr) {
+		entityManager.update(dt, playerPtr);
+		entityManager.cleanupInactive();
+	}
 }
 
-void Level::checkCollisions(int& score)
+void Level::draw(sf::RenderWindow& w, Camera& cam)
 {
-	for (int i = 0; i < projectileCount; i++) {
-		if (!projectiles[i]->isAlive) continue;
+	float camOX = cam.getOffsetX();
+	float camOY = cam.getOffsetY();
 
-		for (int e = 0; e < enemyCount; e++) {
-			if (enemies[e] && enemies[e]->getIsAlive()) {
-				float ex = enemies[e]->getX() + 37.0f; // Center
-				float ey = enemies[e]->getY() + 37.0f;
-				float dx = (projectiles[i]->x + 16.0f) - ex;
-				float dy = (projectiles[i]->y + 16.0f) - ey;
-				
-				if ((dx*dx + dy*dy) < 1600.0f) { // 40px radius
-					enemies[e]->takeDamage(projectiles[i]->damage);
-					if (!enemies[e]->getIsAlive()) score += enemies[e]->getScore();
-					projectiles[i]->onHit();
-					break;
-				}
-			}
+	// Draw Culling logic
+	int startCol = (int)(camOX / cellSize) - 1;
+	int endCol   = startCol + (SCREEN_W / cellSize) + 2;
+
+	if (startCol < 0) startCol = 0;
+	if (endCol >= width) endCol = width - 1;
+
+	for (int y = 0; y < height; ++y) {
+		for (int x = startCol; x <= endCol; ++x) {
+			blocks[y][x].draw(w, camOX, camOY);
+		}
+	}
+
+	// Entities
+	Enemy** enemies = entityManager.getEnemies();
+	for (int i = 0; i < entityManager.getEnemyCount(); ++i) {
+		enemies[i]->draw(window, camOX, camOY); // assuming draw takes offsets
+	}
+	
+	Projectile** projs = entityManager.getProjectiles();
+	for (int i = 0; i < entityManager.getProjectileCount(); ++i) {
+		projs[i]->draw(window, camOX, camOY);
+	}
+}
+
+void Level::addProjectile(Projectile* p) { entityManager.addProjectile(p); }
+void Level::addEnemy(Enemy* e) { entityManager.addEnemy(e); }
+
+Block* Level::getBlock(int x, int y) {
+	if (x >= 0 && x < width && y >= 0 && y < height) return &blocks[y][x];
+	return nullptr;
+}
+
+void Level::destroyBlock(int x, int y, int radius) {
+	for (int i = y - radius; i <= y + radius; ++i) {
+		for (int j = x - radius; j <= x + radius; ++j) {
+			Block* b = getBlock(j, i);
+			if (b) b->destroy();
 		}
 	}
 }
 
-void Level::update(float dt, int& score)
-{
-	for (int i = 0; i < enemyCount; i++) if(enemies[i]) enemies[i]->update(dt);
-	for (int i = 0; i < projectileCount; i++) if(projectiles[i]) projectiles[i]->update(dt);
-
-	checkCollisions(score);
-
-	// Cleanup dead projectiles
-	for (int i = 0; i < projectileCount; ) {
-		if (!projectiles[i]->isAlive) {
-			delete projectiles[i];
-			projectiles[i] = projectiles[projectileCount - 1];
-			projectileCount--;
-		} else { i++; }
-	}
-}
-
-void Level::draw(sf::RenderWindow& window, Camera& camera)
-{
-	float camX = camera.getOffsetX();
-	float camY = camera.getOffsetY();
-
-	for (int i = 0; i < height; ++i) {
-		for (int j = 0; j < width; ++j) {
-			float screenX = (static_cast<float>(j * cellSize)) - camX;
-			if (screenX > -cellSize && screenX < 1600) {
-				if (grid[i][j] == 'B') {
-					blackSprite.setPosition(screenX, static_cast<float>(i * cellSize) - camY);
-					window.draw(blackSprite);
-				} else if (grid[i][j] == 'W') {
-					whiteSprite.setPosition(screenX, static_cast<float>(i * cellSize) - camY);
-					window.draw(whiteSprite);
-				}
-			}
-		}
-	}
-
-	for (int i = 0; i < enemyCount; i++) {
-		if (enemies[i] && enemies[i]->getIsAlive()) {
-			float wx = enemies[i]->getX(); float wy = enemies[i]->getY();
-			enemies[i]->setPosition(wx - camX, wy - camY);
-			enemies[i]->draw(window);
-			enemies[i]->setPosition(wx, wy);
-		}
-	}
-
-	for (int i = 0; i < projectileCount; i++) {
-		if (projectiles[i] && projectiles[i]->isAlive) {
-			float worldX = projectiles[i]->x; float worldY = projectiles[i]->y;
-			projectiles[i]->setPosition(worldX - camX, worldY - camY);
-			projectiles[i]->draw(window);
-			projectiles[i]->setPosition(worldX, worldY);
-		}
-	}
-}
+void Level::setPlayerPtr(Soldier* p) { playerPtr = p; }
+int Level::getWidth() const { return width; }
+int Level::getHeight() const { return height; }
+int Level::getCellSize() const { return cellSize; }

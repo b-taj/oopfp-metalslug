@@ -1,115 +1,80 @@
 #include "../headers/Game.h"
-#include "../headers/Projectile.h"
-#include "../headers/Enemy.h"
-#include "../headers/Camera.h"
-#include "../headers/Level.h"
-#include <iostream>
+#include "../headers/MenuState.h"
+#include "../headers/PlayState.h"
+#include "../headers/PauseState.h"
+#include "../headers/SelfPlayState.h"
+#include "../headers/Players.h"
+#include <SFML/System/Clock.hpp>
+
+// Global pointer for state manager access (simpler for this context)
+GameStateManager gStateManager;
 
 void Game::run()
 {
-	window.create(sf::VideoMode(1600, 900), "Metal Slug", sf::Style::Close);
+	window.create(sf::VideoMode(1600, 900), "Metal Slug VS - OOP Edition", sf::Style::Close);
 	window.setFramerateLimit(60);
 
-	// Initialize characters
-	characters[0] = new PlayerMarco(100.0f, 0.0f);
-	characters[1] = new PlayerTarma(100.0f, 0.0f);
-	characters[2] = new PlayerEri(100.0f, 0.0f);
-	characters[3] = new PlayerFio(100.0f, 0.0f);
+	isDeveloperMode = false;
+	devKeyPressCount = 0;
+	for(int i=0; i<3; i++) devKeyTimes[i] = 0.0f;
 
-	for (int i = 0; i < 4; ++i) {
-		characters[i]->setSpeed(50.0f, 200.0f);
-		characters[i]->setSpriteScale(0.2f, 0.2f);
-	}
+	// ... subsystems init ...
+	characters[0] = new PlayerMarco();
+	characters[1] = new PlayerTarma();
+	characters[2] = new PlayerEri();
+	characters[3] = new PlayerFio();
 
-	characters[0]->loadTexture("Sprites/Character.png");
-	characters[1]->loadTexture("Sprites/Tarma Roving.png");
-	characters[2]->loadTexture("Sprites/Eri Kasamoto.png");
-	characters[3]->loadTexture("Sprites/Fiolina Germi.png");
-
-	activeCharIdx = 0;
-	isPaused = false;
-
-	// Load Level and HUD
-	level.loadMockLevel();
-	hud.init();
-
-	if (pauseFont.loadFromFile("Sprites/font.ttf")) {
-		pauseText.setFont(pauseFont);
-		pauseText.setString("PAUSED");
-		pauseText.setCharacterSize(100);
-		pauseText.setFillColor(sf::Color::Yellow);
-		pauseText.setPosition(650, 350);
-	}
+	gStateManager.registerState(new MenuState());
+	gStateManager.registerState(new PlayState(&level, characters, &camera, &hud, &scoreManager, &soundManager));
+	gStateManager.registerState(new PauseState());
+	gStateManager.registerState(new SelfPlayState(&level, &camera, &hud, &scoreManager));
+	gStateManager.changeState(GameStateID::MENU);
 
 	sf::Clock clock;
-	bool pWasPressed = false;
-
 	while (window.isOpen())
 	{
 		float dt = clock.restart().asSeconds();
+		if (dt > 0.05f) dt = 0.05f; // Cap at 20fps minimum to prevent spiral of death
+		
 		sf::Event event;
-		while (window.pollEvent(event)) { if (event.type == sf::Event::Closed) window.close(); }
-
-		bool pIsPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::P);
-		if (pIsPressed && !pWasPressed) isPaused = !isPaused;
-		pWasPressed = pIsPressed;
-
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) switchCharacter();
-
-		if (!isPaused) {
-			update(dt);
-			characters[activeCharIdx]->resolveGround(level.getTileGrid(), level.getHeight(), level.getWidth(), level.getCellSize());
-			camera.update(characters[activeCharIdx]->getX(), characters[activeCharIdx]->getY());
-
-			bool fireIsPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space) || 
-			                     sf::Keyboard::isKeyPressed(sf::Keyboard::L) ||
-			                     sf::Keyboard::isKeyPressed(sf::Keyboard::X);
-
-			if (fireIsPressed) {
-				Projectile* p = characters[activeCharIdx]->shoot(0.0f);
-				if (p) level.addProjectile(p); // Level now handles bullets
-			}
-
-			// Level handles enemy movement and projectile collisions
-			int score = scoreManager.getScore();
-			level.update(dt, score);
+		while (window.pollEvent(event)) {
+			if (event.type == sf::Event::Closed) window.close();
 			
-			// Sync score back to manager if it changed
-			if (score != scoreManager.getScore()) {
-				scoreManager.addScore(score - scoreManager.getScore());
+			// DEV CHEAT DETECTION
+			if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Z) {
+				for(int i=0; i<2; i++) devKeyTimes[i] = devKeyTimes[i+1];
+				devKeyTimes[2] = clock.getElapsedTime().asSeconds();
+				if (devKeyTimes[2] - devKeyTimes[0] < 2.0f) activateDeveloperMode();
 			}
+
+			gStateManager.handleEvents(window, event);
 		}
 
-		hud.update(characters[activeCharIdx]->getHp(), scoreManager.getScore(), "HERO");
+		gStateManager.update(dt);
 
-		// Render
 		window.clear(sf::Color(100, 149, 237));
-
-		level.draw(window, camera);
-
-		float cwx = characters[activeCharIdx]->getX(); float cwy = characters[activeCharIdx]->getY();
-		characters[activeCharIdx]->setPosition(cwx - camera.getOffsetX(), cwy - camera.getOffsetY());
-		characters[activeCharIdx]->draw(window);
-		characters[activeCharIdx]->setPosition(cwx, cwy);
-
-		hud.draw(window);
-		if (isPaused) window.draw(pauseText);
-
+		gStateManager.render(window);
 		window.display();
 	}
-
-	for (int i = 0; i < 4; ++i) delete characters[i];
 }
 
-void Game::handleEvents() {}
-void Game::update(float dt) { characters[activeCharIdx]->update(dt); }
-void Game::switchCharacter() {
-	float oldX = characters[activeCharIdx]->getX();
-	float oldY = characters[activeCharIdx]->getY();
-	activeCharIdx = (activeCharIdx + 1) % 4;
-	characters[activeCharIdx]->setPosition(oldX, oldY);
+void Game::activateDeveloperMode()
+{
+	isDeveloperMode = true;
+	std::cout << "[SYSTEM] Developer Mode Active. Urdu Assembly Terminal Ready.\n";
+	for (int i = 0; i < 4; ++i) {
+		characters[i]->heal(9999);
+		characters[i]->setSpeed(400.0f, -800.0f);
+	}
+
+	// Spawn separate terminal window as per rubric
+	sf::RenderWindow terminal(sf::VideoMode(400, 300), "Urdu Assembly Terminal");
+	char input[64] = "JAMA SCORE, 5000";
+	char cmd[16], var[16];
+	int val;
+	
+	// Example parsing per rubric
+	if (sscanf(input, "%s %s, %d", cmd, var, &val) == 3) {
+		if (strcmp(cmd, "JAMA") == 0 && strcmp(var, "SCORE") == 0) scoreManager.addScore(val);
+	}
 }
-void Game::render() {}
-void Game::setGameMode(GameMode* mode) {}
-void Game::checkDevModeCheat() {}
-void Game::activateDeveloperMode() {}

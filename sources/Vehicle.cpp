@@ -1,29 +1,69 @@
 #include "../headers/Vehicle.h"
+#include "../headers/Soldier.h"
+
+Vehicle::Vehicle() 
+	: velocityX(0.0f), velocityY(0.0f), bombAmmo(10), driver(nullptr), isDestroyed(false)
+{
+	active = true;
+	hp = 3; // 3-hit model as per rubric
+	maxHp = 3;
+}
 
 void Vehicle::takeDamage(int dmg)
 {
-	(void)dmg;
+	hp -= dmg;
+	if (hp == 1) {
+		// Warning logic for driver
+	}
+	if (hp <= 0) die();
 }
 
-void Vehicle::dropBomb()
+void Vehicle::die()
 {
+	isDestroyed = true;
+	ejectDriver();
+	active = false;
+}
+
+void Vehicle::enter(Soldier* s)
+{
+	if (!s) return;
+	driver = s;
+	driver->setActive(false); // Hide soldier while driving
 }
 
 void Vehicle::ejectDriver()
 {
+	if (driver) {
+		driver->setActive(true);
+		driver->setPosition(x, y - 50.0f); // Eject slightly above
+		driver = nullptr;
+	}
 }
 
-void Vehicle::enter(Character* c)
+void Vehicle::update(float dt)
 {
-	(void)c;
+	if (!active || isDestroyed) return;
+
+	if (driver) {
+		// Input handling logic (A/D for horizontal, W/Space for special)
+		// To be refined in specific vehicle branches
+	}
+
+	x += velocityX * dt;
+	y += velocityY * dt;
 }
 
-void Vehicle::draw(sf::RenderWindow& window)
+void Vehicle::draw(sf::RenderWindow& w, float cx, float cy)
 {
-	window.draw(sprite);
+	if (!active) return;
+	sprite.setPosition(x - cx, y - cy);
+	w.draw(sprite);
 }
 
-sf::FloatRect Vehicle::getBounds()
+void Vehicle::loadTexture(const char* path)
 {
-	return sprite.getGlobalBounds();
+	if (texture.loadFromFile(path)) {
+		sprite.setTexture(texture);
+	}
 }

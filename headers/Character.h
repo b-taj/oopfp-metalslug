@@ -15,9 +15,9 @@ class Character
 public:
 	Character();
 	Character(float startX, float startY);
-	virtual ~Character() = default;
+	virtual ~Character();
 
-	virtual void	update(float dt) = 0;
+	virtual void	update(float dt, float mouseX, float mouseY) = 0;
 	virtual void	activateSpecialPower() = 0;
 	virtual float	getFireRate() = 0;
 	virtual int		getGrenadeDamage() = 0;
@@ -27,31 +27,38 @@ public:
 	void			setSpriteScale(float scaleX, float scaleY);
 	void			loadTexture(const char* filename);
 
-	virtual void	throwGrenade(float angle) {}
-	virtual void	meleeAttack() {}
-	virtual void	pickupWeapon(Weapon* weapon) {}
-	virtual float	getMeleeRange() { return 100.0f; }
+	virtual void	throwGrenade(float angle);
+	virtual void	meleeAttack();
+	virtual void	pickupWeapon(Weapon* weapon);
+	virtual float	getMeleeRange();
 
 	void			moveLeft();
 	void			moveRight();
 	void			moveUp();
 	void			moveDown();
-	void			updateMovement(float dt);
+	void			updateMovement(float dt, float mouseX, float mouseY);
 	void			resolveGround(char** lvl, int height, int width, int cellSize);
 	void			jump();
-	Projectile*		shoot(float angle);
+	Projectile*		shoot(); 
 	void			boardVehicle(Vehicle* vehicle);
 	void			exitVehicle();
 
 	void			takeDamage();
+	void			takeDamage(int dmg);
 	void			die();
 	void			respawn();
 	void			applyState(CharacterState newState);
 
-	void			draw(sf::RenderWindow& window);
-	float			getX() { return x; }
-	float			getY() { return y; }
-	int				getHp() { return hp; }
+	// Combat Actions
+	bool			canMelee();
+	void			performMelee();
+	Projectile*		throwGrenade();
+
+	void			draw(sf::RenderWindow& window, float camX, float camY);
+	float			getX();
+	float			getY();
+	int				getHp();
+	int				getGrenades();
 
 protected:
 	int				hp;
@@ -76,13 +83,16 @@ protected:
 	float			stateTimer;
 	int				damageLevel;
 	sf::Sprite		sprite;
-	sf::Texture		texture;
+	sf::Texture	texture;
 	bool			facingRight;
 	bool			isJumping;
 	float			aimAngle;
-
-	// Animation Timer for procedural bobbing
 	float           walkTimer;
+
+	// Combat internals
+	float			meleeTimer;
+	bool			wantsMelee;
+	bool			wantsGrenade;
 };
 
 class PlayerMarco : public Character
@@ -90,7 +100,7 @@ class PlayerMarco : public Character
 public:
 	PlayerMarco();
 	PlayerMarco(float startX, float startY);
-	void	update(float dt) override;
+	void	update(float dt, float mouseX, float mouseY) override;
 	void	activateSpecialPower() override;
 	float	getFireRate() override;
 	int		getGrenadeDamage() override;
@@ -100,8 +110,6 @@ public:
 	float	getMeleeRange() override;
 
 private:
-	bool	dualFireActive;
-	float	dualFireTimer;
 	bool	canPierceShield;
 };
 
@@ -110,17 +118,13 @@ class PlayerTarma : public Character
 public:
 	PlayerTarma();
 	PlayerTarma(float startX, float startY);
-	void	update(float dt) override;
+	void	update(float dt, float mouseX, float mouseY) override;
 	void	activateSpecialPower() override;
 	float	getFireRate() override;
 	int		getGrenadeDamage() override;
 	float	getVehicleFireRate();
 	float	getVehicleDurability();
 	void	onVehicleDestroyed();
-
-private:
-	bool	immunityActive;
-	float	immunityTimer;
 };
 
 class PlayerEri : public Character
@@ -128,16 +132,11 @@ class PlayerEri : public Character
 public:
 	PlayerEri();
 	PlayerEri(float startX, float startY);
-	void	update(float dt) override;
+	void	update(float dt, float mouseX, float mouseY) override;
 	void	activateSpecialPower() override;
 	void	throwGrenade(float angle) override;
 	float	getFireRate() override;
 	int		getGrenadeDamage() override;
-
-private:
-	bool	doubleGrenadeActive;
-	float	doubleGrenadeTimer;
-	float	blastRadius;
 };
 
 class PlayerFio : public Character
@@ -145,14 +144,10 @@ class PlayerFio : public Character
 public:
 	PlayerFio();
 	PlayerFio(float startX, float startY);
-	void	update(float dt) override;
+	void	update(float dt, float mouseX, float mouseY) override;
 	void	activateSpecialPower() override;
 	void	pickupWeapon(Weapon* weapon) override;
 	float	getFireRate() override;
 	int		getGrenadeDamage() override;
 	float	getMeleeRange() override;
-
-private:
-	bool	superchargeActive;
-	float	superchargeTimer;
 };

@@ -1,22 +1,47 @@
-# Visual Studio
+# =========================
+# Visual Studio folders
+# =========================
 .vs/
-*.user
-*.suo
-
-# Build folders
+x64/
+x86/
 Debug/
 Release/
-x64/
+build/
+out/
 
-# SFML (DO NOT PUSH LIBRARIES)
-include/
-lib/
+# =========================
+# Visual Studio metadata
+# =========================
+*.VC.db
+*.VC.VC.opendb
+*.user
+*.suo
+*.log
 
-# Compiled files
-*.exe
+# =========================
+# Compiled / build files
+# =========================
+*.o
 *.obj
+*.exe
+*.dll
 *.pdb
 *.ilk
 
-# Misc
-*.log
+# =========================
+# SFML / C++ temporary files
+# =========================
+oopfp_me.*
+Source.cpp
+TumblePOP.cpp
+
+# =========================
+# Documents (DO NOT track)
+# =========================
+*.pdf
+
+# =========================
+# System junk
+# =========================
+.DS_Store
+Thumbs.db

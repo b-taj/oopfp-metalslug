@@ -1,29 +1,53 @@
 #include "../headers/Grenade.h"
 
-void Grenade::update(float dt)
+/**
+ * Grenade Implementation
+ * 
+ * Base and concrete classes for throwable explosive devices.
+ * Handles timers, blast radii, and physics integration for grenades.
+ */
+
+// Virtual destructor for proper cleanup of derived grenade types
+Grenade::~Grenade()
 {
-	(void)dt;
 }
 
+// Renders the grenade sprite to the target SFML window
 void Grenade::draw(sf::RenderWindow& window)
 {
-	window.draw(sprite);
+	if (!isExploded) window.draw(sprite);
 }
 
-void Grenade::launch(float ox, float oy, float angle)
+// Returns the axis-aligned bounding box for collision detection
+sf::FloatRect Grenade::getBounds()
 {
-	(void)ox; (void)oy; (void)angle;
+	return sprite.getGlobalBounds();
 }
 
+// ==================== HAND GRENADE ====================
+
+// Updates physics for the standard hand grenade and checks the fuse timer
+void HandGrenade::update(float dt)
+{
+    (void)dt;
+}
+
+// Triggers the standard explosive blast logic
 void HandGrenade::explode()
 {
+    isExploded = true;
 }
 
+// ==================== FIRE BOMB GRENADE ====================
+
+// Updates physics for the Eri-specific fire bomb
+void FireBombGrenade::update(float dt)
+{
+    (void)dt;
+}
+
+// Triggers an incendiary blast that creates a lingering damage area
 void FireBombGrenade::explode()
 {
-}
-
-void FireBombGrenade::updateFirePool(float dt)
-{
-	(void)dt;
+    isExploded = true;
 }

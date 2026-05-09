@@ -1,52 +1,27 @@
 #include "../headers/Projectile.h"
-#include <cmath>
 
-void Projectile::update(float dt)
+Projectile::Projectile()
+	: damage(0), velocityX(0.0f), velocityY(0.0f), fromPlayer(true), 
+	  projType(ProjectileType::STRAIGHT), isEnemyProjectile(false)
 {
-	if (!isAlive) return;
+	active = true;
+	width = 16.0f;
+	height = 16.0f;
+}
 
-	x += velX * dt;
-	y += velY * dt;
+void Projectile::draw(sf::RenderWindow& window, float camOX, float camOY)
+{
+	if (!active) return;
+	sprite.setPosition(x - camOX, y - camOY);
+	window.draw(sprite);
+}
 
-	sprite.setPosition(x, y);
+int Projectile::getDamage() const { return damage; }
+bool Projectile::isFromPlayer() const { return fromPlayer; }
 
-	// Deactivate only when truly outside the scrolling world bounds
-	// Level is 110 tiles * 64px = 7040px wide. 
-	if (x < -500 || x > 8000 || y < -500 || y > 2000)
-	{
-		isAlive = false;
+void Projectile::loadTexture(const char* path)
+{
+	if (texture.loadFromFile(path)) {
+		sprite.setTexture(texture);
 	}
-}
-
-void Projectile::draw(sf::RenderWindow& window)
-{
-	if (isAlive)
-	{
-		window.draw(sprite);
-	}
-}
-
-void Projectile::onHit()
-{
-	isAlive = false;
-}
-
-void Projectile::loadTexture(const char* filename)
-{
-	if (!texture.loadFromFile(filename)) {
-		// Fallback: SFML draws a white box if no texture is found
-	}
-	sprite.setTexture(texture);
-}
-
-void Projectile::setTextureRect(int left, int top, int width, int height)
-{
-	sprite.setTextureRect(sf::IntRect(left, top, width, height));
-}
-
-void Projectile::setPosition(float nx, float ny)
-{
-	x = nx;
-	y = ny;
-	sprite.setPosition(x, y);
 }

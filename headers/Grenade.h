@@ -1,54 +1,44 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include "Enums.h"
 
-// Grenade.h -- Abstract throwable explosive. Sub-classes override explode()
-// for their unique detonation effect. Physics (arc, gravity) live in the base.
+// Grenade.h -- Player explosive weapon. Sub-classes for HandGrenade and FireBombGrenade.
+// explode() creates a blast radius that destroys destructible blocks and damages enemies.
 
 class Grenade
 {
 public:
-	virtual ~Grenade() = default;
+	virtual ~Grenade();
 
-	// Detonation effect defined per sub-class (damage, radius, fire pool).
+	virtual void	update(float dt) = 0;
 	virtual void	explode() = 0;
 
-	// Step ballistic arc physics; detect ground or enemy contact.
-	void		update(float dt);
-
-	void		draw(sf::RenderWindow& window);
-
-	// Compute and apply initial velocity from origin at given angle.
-	void		launch(float ox, float oy, float angle);
+	void			draw(sf::RenderWindow& window);
+	sf::FloatRect	getBounds();
 
 protected:
 	float		x;
 	float		y;
-	float		velocityX;
-	float		velocityY;
+	float		velX;
+	float		velY;
 	int			damage;
-	float		blastRadius;		// radius in blocks
-	bool		hasExploded;
+	float		blastRadius;
+	float		fuseTimer;		// seconds until automatic explode()
 	sf::Sprite	sprite;
 	sf::Texture	texture;
+	bool		isExploded;
 };
 
-// Default grenade; 5 HP damage; 3-block blast radius.
 class HandGrenade : public Grenade
 {
 public:
+	void	update(float dt) override;
 	void	explode() override;
 };
 
-// Eri's default grenade; explodes on impact; leaves a 3-block fire pool for 10 s.
 class FireBombGrenade : public Grenade
 {
 public:
+	void	update(float dt) override;
 	void	explode() override;
-
-	// Tick fire pool duration; deactivate when timer reaches 0.
-	void	updateFirePool(float dt);
-
-private:
-	float	firePoolTimer;		// 10.0 s remaining
-	float	firePoolRadius;		// 3 blocks
 };

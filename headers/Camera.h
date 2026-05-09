@@ -19,6 +19,8 @@ public:
 	float	getOffsetX();
 	float	getOffsetY();
 
+	void	setBounds(int w, int h);
+
 private:
 	float	offsetX;		// current horizontal scroll
 	float	offsetY;		// current vertical scroll

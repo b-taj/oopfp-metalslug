@@ -1,11 +1,15 @@
 #pragma once
-#include <SFML/Graphics.hpp>
 #include "Block.h"
+#include "Biome.h"
+#include "EntityManager.h"
+#include "Camera.h"
+#include "ScoreManager.h"
+#include "Soldier.h"
 
-#include "Enemy.h"
-#include "Projectile.h"
-
-class Camera;
+/**
+ * Level.h -- The main world container.
+ * Owns the block grid, the biome rules, and the entity manager.
+ */
 
 class Level
 {
@@ -14,32 +18,39 @@ public:
 	~Level();
 
 	void	loadMockLevel();
+	void	loadSurvivalLevel(int levelNum);
 
-	void	update(float dt, int& score); // Pass score by ref to update it on kills
-	void	draw(sf::RenderWindow& window, Camera& camera);
+	void	update(float dt, ScoreManager& score);
+	void	draw(sf::RenderWindow& w, Camera& cam);
 
-	void	addProjectile(Projectile* p);
-
-	// Getters for Character collision
-	char**	getTileGrid() { return grid; }
-	int		getHeight() { return height; }
-	int		getWidth() { return width; }
-	int		getCellSize() { return cellSize; }
+	void	addProjectile(class Projectile* p);
+	void	addEnemy(class Enemy* e);
+	
+	Block*	getBlock(int x, int y);
+	void	destroyBlock(int x, int y, int radius);
+	void	fillCraterWithWater();
+	
+	Biome*	getBiomeAt(int x);
+	
+	int		getWidth() const;
+	int		getHeight() const;
+	int		getCellSize() const;
+	
+	void	setPlayerPtr(Soldier* p);
 
 private:
-	void    checkCollisions(int& score);
+	Block**			blocks;			// [LEVEL_HEIGHT][LEVEL_WIDTH]
+	int				width;
+	int				height;
+	int				cellSize;
 
-	char**		grid;
-	int			height;
-	int			width;
-	int			cellSize;
+	Biome*			biomes[3];		// Aerial, Plains, Aquatic
+	EntityManager	entityManager;
+	Soldier*		playerPtr;
 
-	Enemy*      enemies[64];
-	int         enemyCount;
-
-	Projectile* projectiles[512];
-	int         projectileCount;
-
-	sf::Texture	blackTex, whiteTex;
-	sf::Sprite	blackSprite, whiteSprite;
+	sf::Texture		stoneTex;		// Managed shared texture
+	
+	int				seaLevel;
+	bool			isRaining;
+	float			rainTimer;
 };

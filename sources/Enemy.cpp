@@ -1,69 +1,88 @@
 #include "../headers/Enemy.h"
+#include "../headers/PatrolState.h"
+#include "../headers/DeadAIState.h"
+#include "../headers/Constants.h"
 
-void Enemy::activateGrudge() {}
-int Enemy::getScore() { return scoreValue; }
-void Enemy::draw(sf::RenderWindow& window) { if (isAlive) window.draw(sprite); }
-void Enemy::setPosition(float nx, float ny) { x = nx; y = ny; sprite.setPosition(x, y); }
-
-void Enemy::loadTexture(const char* filename)
+Enemy::Enemy() 
+	: currentAI(nullptr), weapon(nullptr), aggroRange(400.0f), scoreValue(0),
+	  isGrudge(false), grudgePowerMult(1.5f), velocityX(0.0f), velocityY(0.0f), facingRight(true)
 {
-	if (texture.loadFromFile(filename)) {
-		sprite.setTexture(texture);
-		sprite.setTextureRect(sf::IntRect(0, 0, 50, 50)); 
+	active = true;
+	currentAI = new PatrolState(); // UML requirement
+}
+
+Enemy::~Enemy()
+{
+	if (currentAI) delete currentAI;
+	if (weapon) delete weapon;
+}
+
+void Enemy::update(float dt) { (void)dt; }
+
+void Enemy::update(float dt, class Soldier* player)
+{
+	if (!active) return;
+
+	// Physics
+	velocityY += GRAVITY * dt;
+	x += velocityX * dt;
+	y += velocityY * dt;
+
+	if (currentAI) currentAI->update(this, dt, player);
+	if (weapon) weapon->update(dt);
+}
+
+void Enemy::setAIState(EnemyAIState* next)
+{
+	if (!next) return;
+	if (currentAI) {
+		currentAI->onExit(this);
+		delete currentAI;
 	}
+	currentAI = next;
+	currentAI->onEnter(this);
 }
 
-// ==================== REBEL SOLDIER ====================
-
-RebelSoldier::RebelSoldier(float sx, float sy)
+void Enemy::takeDamage(int dmg)
 {
-	// Initialize members directly in body as they are protected in Enemy
-	x = sx;
-	y = sy;
-	hp = 20; 
-	speed = 100.0f;
-	isAlive = true;
-	facingRight = true;
-	scoreValue = 50;
-	grudgePowerMult = 1.0f;
-	isGrudge = false;
-
-	loadTexture("Sprites/Enemies/green.png"); 
-	sprite.setScale(1.5f, 1.5f);
-	sprite.setPosition(x, y);
-}
-
-void RebelSoldier::update(float dt)
-{
-	if (!isAlive) return;
-
-	float patrolRange = 100.0f;
-	// Use a fixed start point for patrolling relative to spawn
-	static float startX = x; 
-	
-	if (facingRight) {
-		x += speed * dt;
-		if (x > startX + patrolRange) {
-			facingRight = false;
-		}
-	} else {
-		x -= speed * dt;
-		if (x < startX - patrolRange) {
-			facingRight = true;
-		}
-	}
-	sprite.setPosition(x, y);
-}
-
-void RebelSoldier::takeDamage(int dmg)
-{
-	hp -= dmg;
+	hp -= isGrudge ? (int)(dmg * 0.5f) : dmg; // Grudge enemies are tankier
 	if (hp <= 0) die();
 }
 
-void RebelSoldier::attack(Character* target) { (void)target; }
-
-void RebelSoldier::die()
+void Enemy::die()
 {
-	isAlive = false;
+	hp = 0;
+	onDeath();
+	setAIState(new DeadAIState());
+	active = false;
+}
+
+void Enemy::activateGrudge()
+{
+	isGrudge = true;
+	hp = maxHp * 2;
+}
+
+void Enemy::loadTexture(const char* path) { texture.loadFromFile(path); sprite.setTexture(texture); }
+int Enemy::getScoreValue() const { return scoreValue; }
+void Enemy::setVelocityX(float vx) { velocityX = vx; }
+void Enemy::setVelocityY(float vy) { velocityY = vy; }
+void Enemy::setFacingRight(bool right) { facingRight = right; }
+
+void Enemy::shootPlayer(class Soldier* player)
+{
+	if (weapon && weapon->canFire()) {
+		// Calculate angle to player
+		// Projectile* p = weapon->fire(x, y, angle);
+		// Add to Level... (implemented in EntityManager)
+	}
+}
+
+void Enemy::draw(sf::RenderWindow& window, float camOX, float camOY)
+{
+	if (!active) return;
+	sprite.setPosition(x - camOX, y - camOY);
+	if (facingRight) sprite.setScale(std::abs(sprite.getScale().x), sprite.getScale().y);
+	else sprite.setScale(-std::abs(sprite.getScale().x), sprite.getScale().y);
+	window.draw(sprite);
 }

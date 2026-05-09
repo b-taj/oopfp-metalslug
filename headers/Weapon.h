@@ -1,63 +1,33 @@
 #pragma once
-#include <SFML/Graphics.hpp>
+#include "Enums.h"
+#include "Projectile.h"
 
-class Projectile;
+/**
+ * Weapon.h -- Abstract base class for all combat equipment.
+ * Manages fire rates, ammunition, and cooldown timers.
+ */
 
 class Weapon
 {
 public:
 	virtual ~Weapon() = default;
 
-	virtual Projectile*	fire(float x, float y, float angle) = 0;
+	virtual Projectile* fire(float x, float y, float angle) = 0;
+	virtual WeaponType	getType() const = 0;
 
-	bool	canFire();
-	void			reload(int amount);
-	int				getAmmo();
-	int				getDamage();
-	void			update(float dt);
+	void				update(float dt);
+	bool				canFire() const;
+	void				reload(int amount);
+
+	int					getAmmo() const;
+	int					getDamage() const;
 
 protected:
-	int		ammo;
-	bool	infiniteAmmo;
-	float	fireRate;
-	int		damage;
-	float	fireTimer;
-};
+	Weapon();
 
-class Pistol : public Weapon
-{
-public:
-	Projectile*	fire(float x, float y, float angle) override;
-};
-
-class HeavyMachineGun : public Weapon
-{
-public:
-	Projectile*	fire(float x, float y, float angle) override;
-};
-
-class RocketLauncher : public Weapon
-{
-public:
-	Projectile*	fire(float x, float y, float angle) override;
-
-private:
-	float	reloadCooldown;
-	float	blastRadius;
-};
-
-class FlameShot : public Weapon
-{
-public:
-	Projectile*	fire(float x, float y, float angle) override;
-
-private:
-	float	range;
-	float	burnDmgPerSec;
-};
-
-class LaserGun : public Weapon
-{
-public:
-	Projectile*	fire(float x, float y, float angle) override;
+	int					ammo;
+	bool				infiniteAmmo;
+	float				fireRate;		// Shots per second
+	float				fireTimer;		// Accumulated time
+	int					damage;
 };

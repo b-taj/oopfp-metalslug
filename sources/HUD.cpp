@@ -1,77 +1,91 @@
 #include "../headers/HUD.h"
-#include <iostream>
+#include "../headers/Constants.h"
+#include <cstdio>
 
-// Helper to convert integer to string without using STL <string>
-void intToString(int n, char* str) {
-    int i = 0;
-    if (n == 0) {
-        str[i++] = '0';
-        str[i] = '\0';
-        return;
-    }
-    int temp = n;
-    int len = 0;
-    while (temp > 0) {
-        temp /= 10;
-        len++;
-    }
-    for (i = len - 1; i >= 0; i--) {
-        str[i] = (n % 10) + '0';
-        n /= 10;
-    }
-    str[len] = '\0';
+HUD::HUD() : damageFlashTimer(0.0f)
+{
+	damageOverlay.setSize(sf::Vector2f((float)SCREEN_W, (float)SCREEN_H));
+	damageOverlay.setFillColor(sf::Color(255, 0, 0, 0));
 }
 
 void HUD::init()
 {
-    if (font.loadFromFile("Sprites/font.ttf")) {
-        hpText.setFont(font);
-        hpText.setCharacterSize(30);
-        hpText.setFillColor(sf::Color::Red);
-        hpText.setPosition(20, 20);
+	if (font.loadFromFile("Sprites/font.ttf")) {
+		hpText.setFont(font);
+		scoreText.setFont(font);
+		nameText.setFont(font);
+		ammoText.setFont(font);
+		grenadeText.setFont(font);
 
-        nameText.setFont(font);
-        nameText.setCharacterSize(30);
-        nameText.setFillColor(sf::Color::White);
-        nameText.setPosition(20, 60);
+		hpText.setCharacterSize(24);
+		scoreText.setCharacterSize(24);
+		nameText.setCharacterSize(30);
+		ammoText.setCharacterSize(24);
+		grenadeText.setCharacterSize(24);
 
-        scoreText.setFont(font);
-        scoreText.setCharacterSize(30);
-        scoreText.setFillColor(sf::Color::Yellow);
-        scoreText.setPosition(1350, 20);
-    }
+		nameText.setPosition(20, 20);
+		hpText.setPosition(20, 60);
+		scoreText.setPosition(SCREEN_W - 200, 20);
+		ammoText.setPosition(20, SCREEN_H - 100);
+		grenadeText.setPosition(20, SCREEN_H - 60);
+
+		healthBarBG.setSize(sf::Vector2f(200, 20));
+		healthBarBG.setFillColor(sf::Color(50, 50, 50));
+		healthBarBG.setPosition(100, 65);
+
+		healthBar.setSize(sf::Vector2f(200, 20));
+		healthBar.setFillColor(sf::Color::Red);
+		healthBar.setPosition(100, 65);
+	}
 }
 
-void HUD::update(int hp, int score, const char* name)
+void HUD::update(int hp, int maxHp, int score, const char* name, int ammo, int grenades, float dt)
 {
-    char hpBuf[32] = "HP: ";
-    char hpNum[16];
-    intToString(hp, hpNum);
-    
-    // Manual cat
-    int idx = 4;
-    for(int i=0; hpNum[i] != '\0'; i++) hpBuf[idx++] = hpNum[i];
-    hpBuf[idx] = '\0';
-    hpText.setString(hpBuf);
+	char buffer[64];
+	
+	std::snprintf(buffer, sizeof(buffer), "NAME: %s", name);
+	nameText.setString(buffer);
 
-    char scoreBuf[64] = "SCORE: ";
-    char scoreNum[16];
-    intToString(score, scoreNum);
-    
-    idx = 7;
-    for(int i=0; scoreNum[i] != '\0'; i++) scoreBuf[idx++] = scoreNum[i];
-    scoreBuf[idx] = '\0';
-    scoreText.setString(scoreBuf);
+	std::snprintf(buffer, sizeof(buffer), "HP: %d/%d", hp, maxHp);
+	hpText.setString(buffer);
 
-    nameText.setString(name);
+	std::snprintf(buffer, sizeof(buffer), "SCORE: %06d", score);
+	scoreText.setString(buffer);
+
+	std::snprintf(buffer, sizeof(buffer), "AMMO: %d", ammo);
+	ammoText.setString(buffer);
+
+	std::snprintf(buffer, sizeof(buffer), "GRENADES: %d", grenades);
+	grenadeText.setString(buffer);
+
+	float hpRatio = (float)hp / maxHp;
+	if (hpRatio < 0) hpRatio = 0;
+	healthBar.setSize(sf::Vector2f(200.0f * hpRatio, 20.0f));
+
+	if (damageFlashTimer > 0) {
+		damageFlashTimer -= dt;
+		if (damageFlashTimer < 0) damageFlashTimer = 0;
+		int alpha = (int)((damageFlashTimer / 1.0f) * 128);
+		damageOverlay.setFillColor(sf::Color(255, 0, 0, alpha));
+	}
 }
 
-void HUD::draw(sf::RenderWindow& window)
+void HUD::draw(sf::RenderWindow& w)
 {
-    window.draw(hpText);
-    window.draw(nameText);
-    window.draw(scoreText);
+	w.draw(nameText);
+	w.draw(scoreText);
+	w.draw(hpText);
+	w.draw(healthBarBG);
+	w.draw(healthBar);
+	w.draw(ammoText);
+	w.draw(grenadeText);
+
+	if (damageFlashTimer > 0) {
+		w.draw(damageOverlay);
+	}
 }
 
-void HUD::showDamageFlash() {}
-void HUD::showLevelMessage(const char* msg) { (void)msg; }
+void HUD::triggerDamageFlash()
+{
+	damageFlashTimer = 1.0f;
+}
