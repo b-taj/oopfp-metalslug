@@ -46,12 +46,14 @@ void Vehicle::update(float dt)
 	if (!active || isDestroyed) return;
 
 	if (driver) {
-		// Input handling logic (A/D for horizontal, W/Space for special)
-		// To be refined in specific vehicle branches
+		// Input handling logic...
 	}
 
 	x += velocityX * dt;
 	y += velocityY * dt;
+
+	animator.update(dt);
+	animator.applyToSprite(sprite);
 }
 
 void Vehicle::draw(sf::RenderWindow& w, float cx, float cy)

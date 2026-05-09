@@ -29,9 +29,15 @@ void Collectible::checkPickup(class Soldier* s)
 	if (!active || !s) return;
 	if (getBounds().intersects(s->getBounds())) {
 		onPickup(s);
+		if (soundManager) soundManager->play("pickup");
 		pickedUp = true;
 		active = false;
 	}
+}
+
+void Collectible::setSoundManager(SoundManager* sm)
+{
+	soundManager = sm;
 }
 
 CollectibleType Collectible::getType() const { return ctype; }

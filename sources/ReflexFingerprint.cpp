@@ -1,8 +1,11 @@
 #include "../headers/ReflexFingerprint.h"
+#include "../headers/GhostPlayer.h"
+#include "../headers/BehaviorChain.h"
+#include <SFML/Graphics.hpp>
 #include <iostream>
 #include <cmath>
 
-void ReflexFingerprint::record(int code) { (void)code; }
+void ReflexFingerprint::record(int code, float dt) { (void)code; (void)dt; }
 void ReflexFingerprint::saveToFile(const char* path) { (void)path; }
 void ReflexFingerprint::loadFromFile(const char* path) { (void)path; }
 int ReflexFingerprint::getNextAction() { return 0; }

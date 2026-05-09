@@ -2,8 +2,8 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include <SFML/Window.hpp>
-#include "GameMode.h"
-#include "Character.h"
+#include "GameStateManager.h"
+#include "PlayerSoldier.h"
 #include "Camera.h"
 #include "Level.h"
 #include "HUD.h"

@@ -2,13 +2,38 @@
 #include <cmath>
 #include <cstring>
 
-SoundManager::SoundManager() : soundCount(0), isUnderwater(false)
+SoundManager::SoundManager() : entryCount(0), isUnderwater(false)
 {
+}
+
+bool SoundManager::load(const char* id, const char* filePath)
+{
+	if (entryCount >= 32) return false;
+	
+	SoundEntry& e = entries[entryCount];
+	
+	// Manual string copy to avoid unsafe strncpy/strncpy_s issues
+	int j = 0;
+	for (; j < 31 && id[j] != '\0'; j++) {
+		e.id[j] = id[j];
+	}
+	e.id[j] = '\0';
+
+	if (!e.buffer.loadFromFile(filePath)) return false;
+	
+	e.sound.setBuffer(e.buffer);
+	entryCount++;
+	return true;
 }
 
 void SoundManager::play(const char* id)
 {
-	// Logic to find buffer by ID and play in sounds[soundCount++]
+	for (int i = 0; i < entryCount; i++) {
+		if (std::strcmp(entries[i].id, id) == 0) {
+			entries[i].sound.play();
+			return;
+		}
+	}
 }
 
 void SoundManager::playMusic(const char* file)
@@ -22,8 +47,6 @@ void SoundManager::setUnderwater(bool u)
 {
 	if (isUnderwater != u) {
 		isUnderwater = u;
-		// If changed, real-time reprocessing would happen here
-		// Rubric: trigger applyLowpassFilter
 	}
 }
 
@@ -60,26 +83,20 @@ void SoundManager::applyLowpassFilter(sf::SoundBuffer& buf)
 	sf::Uint64 count = buf.getSampleCount();
 	unsigned int rate = buf.getSampleRate();
 	
-	// We only process in chunks of 2048 for the DFT window
 	int n = 2048;
 	if (count < (sf::Uint64)n) return;
 
 	sf::Int16* newSamples = new sf::Int16[count];
 	std::memcpy(newSamples, samples, count * sizeof(sf::Int16));
 
-	// Cutoff frequency ~500Hz
-	// index k corresponds to frequency k * rate / n
 	int cutoffK = (500 * n) / rate;
 
 	for (sf::Uint64 i = 0; i + n <= count; i += n) {
 		dft(&samples[i], n, fftReal, fftImag);
-		
-		// Muffle: Zero out high frequencies
 		for (int k = cutoffK; k < n - cutoffK; ++k) {
 			fftReal[k] = 0;
 			fftImag[k] = 0;
 		}
-
 		idft(fftReal, fftImag, n, &newSamples[i]);
 	}
 

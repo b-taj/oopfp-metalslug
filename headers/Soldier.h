@@ -2,6 +2,7 @@
 #include "DamagableEntity.h"
 #include "TransformationState.h"
 #include "Weapon.h"
+#include "SpriteAnimator.h"
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
@@ -34,6 +35,16 @@ public:
 	void			loadTexture(const char* path);
 	void			setSpriteScale(float sx, float sy);
 	void			setSpeed(float spd, float jumpForce);
+	void			setSoundManager(class SoundManager* sm);
+
+	float			getVelocityX() const;
+	float			getVelocityY() const;
+	bool			isOnGround() const;
+
+	void			moveLeft(float dt);
+	void			moveRight(float dt);
+	void			jump();
+	class Projectile* throwGrenade(float angle);
 
 	int				getLives() const;
 	int				getGrenadeCount() const;
@@ -44,6 +55,7 @@ public:
 protected:
 	Soldier();
 
+	SpriteAnimator	animator; // Direct member
 	sf::Texture		texture;
 	sf::Sprite		sprite;
 
@@ -53,8 +65,13 @@ protected:
 	float			velocityY;
 	float			speedMult;		// Applied by states
 
+	float			accel;			// horizontal acceleration
+	float			friction;		// horizontal deceleration
+	float			maxSpeedX;		// cap
+
 	bool			onGround;
 	bool			facingRight;
+	bool			jumpWasPressed;
 	bool			knifeOnly;
 
 	int				lives;
@@ -62,5 +79,6 @@ protected:
 
 	TransformationState* currentTransform;	// OWNED
 	Weapon*			currentWeapon;			// OWNED (Composition)
-	Weapon*			pistol;					// OWNED (Fallback)
+	class Pistol*	pistol;					// OWNED (Fallback)
+	class SoundManager* soundManager;		// AGGREGATED
 };

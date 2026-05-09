@@ -19,6 +19,7 @@ public:
 
 	void	loadMockLevel();
 	void	loadSurvivalLevel(int levelNum);
+	void	generateDebugLevel();
 
 	void	update(float dt, ScoreManager& score);
 	void	draw(sf::RenderWindow& w, Camera& cam);
@@ -37,6 +38,7 @@ public:
 	int		getCellSize() const;
 	
 	void	setPlayerPtr(Soldier* p);
+	const char** getTileGrid();
 
 private:
 	Block**			blocks;			// [LEVEL_HEIGHT][LEVEL_WIDTH]

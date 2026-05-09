@@ -23,7 +23,7 @@ public:
 	void		addCollectible(Collectible* c);
 	void		addInteractable(InteractableObject* i);
 
-	void		update(float dt, Soldier* player, bool interactPressed);
+	void		update(float dt, Soldier* player, bool interactPressed, float camOffsetX);
 	void		cleanupInactive();
 	void		clear();
 
@@ -31,6 +31,7 @@ public:
 	int				getEnemyCount() const;
 	Projectile**	getProjectiles();
 	int				getProjectileCount() const;
+	Enemy*			getNearestEnemy(float px, float py) const;
 
 private:
 	void		checkCollisions(Soldier* player);

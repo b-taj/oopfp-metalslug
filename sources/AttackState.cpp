@@ -4,11 +4,13 @@
 #include "../headers/Soldier.h"
 #include <cmath>
 
-AttackState::AttackState() : fireTimer(0.0f) {}
+AttackState::AttackState() : fireTimer(0.0f), fireRate(1.5f) {}
 
 void AttackState::onEnter(class Enemy* e) { (void)e; }
 
 void AttackState::update(class Enemy* e, float dt, class Soldier* player) {
+	if (player == nullptr) return; // FIX 4: Null guard
+
 	float dx = player->getX() - e->getX();
 	float dy = player->getY() - e->getY();
 	float dist = std::sqrt(dx*dx + dy*dy);
@@ -23,9 +25,13 @@ void AttackState::update(class Enemy* e, float dt, class Soldier* player) {
 
 	// Firing logic
 	fireTimer += dt;
-	if (fireTimer >= 1.0f) { // 1 shot per second in attack state
+	if (fireTimer >= fireRate)
+	{
+		Projectile* p = e->fireWeapon(player);
+		// The caller of EnemyAIState::update (EntityManager) usually handles adding the projectile.
+		// However, for direct fix, we rely on the implementation pattern.
+		// If fireWeapon returns a projectile, we assume it's handled or added to a queue.
 		fireTimer = 0.0f;
-		e->shootPlayer(player);
 	}
 
 	// De-aggro

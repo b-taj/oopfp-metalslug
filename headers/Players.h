@@ -4,10 +4,16 @@
 class PlayerMarco : public PlayerSoldier {
 public:
     PlayerMarco() {
-        hp = 100; speedX = 200.0f; grenadeCount = 8; // -2 grenades
+        hp = 100; speedX = 200.0f; grenadeCount = 8;
+        // Placeholder animations
+        SpriteAnimator::Frame f = { sf::IntRect(0,0,100,100), 0.1f };
+        animator.addAnimation("idle", &f, 1, true);
+        animator.addAnimation("walk", &f, 1, true);
+        animator.addAnimation("jump", &f, 1, true);
+        animator.addAnimation("die", &f, 1, false);
     }
     void activateSpecialPower() override {}
-    float getFireRate() const override { return 1.25f; } // +25%
+    float getFireRate() const override { return 1.25f; }
     const char* getName() const override { return "MARCO"; }
 };
 

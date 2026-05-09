@@ -1,10 +1,6 @@
 #pragma once
 #include "Boss.h"
-#include "ConcreteWeapons.h"
-
-/**
- * HairbusterRiberts.h -- Aerial boss for Phase 2.
- */
+#include "Weapon.h"
 
 class HairbusterRiberts : public Boss
 {
@@ -19,5 +15,5 @@ public:
 	void	update(float dt, class Soldier* player) override;
 
 private:
-	RocketLauncher* rocketBays[4];
+	Weapon* rocketBays[4];
 };

@@ -17,6 +17,11 @@ bool Weapon::canFire() const
 	return (fireTimer >= 1.0f / fireRate) && (infiniteAmmo || ammo > 0);
 }
 
+bool Weapon::isOutOfAmmo() const
+{
+	return !infiniteAmmo && ammo <= 0;
+}
+
 void Weapon::reload(int amount) { ammo += amount; }
 int Weapon::getAmmo() const { return ammo; }
 int Weapon::getDamage() const { return damage; }

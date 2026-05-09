@@ -4,7 +4,8 @@
 #include <cmath>
 
 BallisticProjectile::BallisticProjectile(float sx, float sy, float vx, float vy, int dmg, bool playerOwned, EntityManager* em)
-	: gravity(GRAVITY), explosive(false), blastRadius(0.0f), burning(false), burnTimer(0.0f), entityManager(em)
+	: gravity(GRAVITY), explosive(false), blastRadius(0.0f), burning(false), burnTimer(0.0f), entityManager(em),
+	  tileGrid(nullptr), gridH(0), gridW(0), cellSz(1)
 {
 	x = sx; y = sy;
 	velocityX = vx; velocityY = vy;
@@ -20,18 +21,40 @@ void BallisticProjectile::update(float dt)
 	x += velocityX * dt;
 	y += velocityY * dt;
 
-	// Check for ground impact (Simple height check for now, can be refined with grid collision)
-	if (y > SCREEN_H - 100.0f) { 
-		if (explosive) explode();
-		active = false;
+	// Grid-based ground collision
+	if (tileGrid) {
+		int col = (int)(x / cellSz);
+		int row = (int)((y + height) / cellSz);
+		if (col >= 0 && col < gridW && row >= 0 && row < gridH) {
+			char tile = tileGrid[row][col];
+			if (tile != '\0' && tile != ' ') { // Any solid tile
+				if (explosive) explode();
+				active = false;
+				return;
+			}
+		}
 	}
 
-	// Bounds check
-	if (x < -100 || x > LEVEL_WIDTH * CELL_SIZE + 100) active = false;
+	// Fallback/Bounds check
+	if (x < -100 || x > LEVEL_WIDTH * CELL_SIZE + 100 || y > SCREEN_H + 500) active = false;
+}
+
+void BallisticProjectile::setLevelRef(const char** grid, int h, int w, int cell)
+{
+	tileGrid = grid;
+	gridH = h;
+	gridW = w;
+	cellSz = cell;
+}
+
+void BallisticProjectile::setSoundManager(SoundManager* sm)
+{
+	soundManager = sm;
 }
 
 void BallisticProjectile::explode()
-{
+...
+	if (soundManager) soundManager->play("explosion");
 	if (!entityManager) return;
 
 	Enemy** enemies = entityManager->getEnemies();

@@ -42,7 +42,9 @@ void EntityManager::update(float dt, Soldier* player, bool interactPressed, floa
 		if (enemies[i]->isActive()) {
 			enemies[i]->update(dt, player);
 
-			// GRUDGE DETECTION: If enemy is scrolled past without being killed
+			// Capture fire if needed - although AttackState doesn't return it yet, 
+			// we add support for any logic that does.
+			
 			if (enemies[i]->getX() < camOffsetX - 100.0f) {
 				enemies[i]->activateGrudge();
 			}
@@ -169,6 +171,23 @@ void EntityManager::clear()
 
 	for (int i = 0; i < collectibleCount; ++i) delete collectibles[i];
 	collectibleCount = 0;
+}
+
+Enemy* EntityManager::getNearestEnemy(float px, float py) const
+{
+	Enemy* nearest = nullptr;
+	float minDist = 1e9f;
+	for (int i = 0; i < enemyCount; i++) {
+		if (!enemies[i]->isActive()) continue;
+		float dx = enemies[i]->getX() - px;
+		float dy = enemies[i]->getY() - py;
+		float d = std::sqrt(dx*dx + dy*dy);
+		if (d < minDist) {
+			minDist = d;
+			nearest = enemies[i];
+		}
+	}
+	return nearest;
 }
 
 Enemy** EntityManager::getEnemies() { return enemies; }

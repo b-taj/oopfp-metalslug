@@ -1,5 +1,6 @@
 #pragma once
 #include "Projectile.h"
+#include "SoundManager.h"
 
 /**
  * BallisticProjectile.h -- Arcing projectiles (Rockets, Grenades).
@@ -16,6 +17,8 @@ public:
 
 	void	setExplosive(bool e, float radius);
 	void	setBurning(bool b, float time);
+	void	setLevelRef(const char** grid, int h, int w, int cell);
+	void	setSoundManager(class SoundManager* sm);
 
 private:
 	float	gravity;
@@ -24,4 +27,8 @@ private:
 	bool	burning;
 	float	burnTimer;
 	class EntityManager* entityManager;
+	class SoundManager* soundManager;	// AGGREGATED
+
+	const char** tileGrid;
+	int gridH, gridW, cellSz;
 };

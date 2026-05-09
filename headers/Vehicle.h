@@ -1,6 +1,7 @@
 #pragma once
 #include "DamagableEntity.h"
 #include "Enums.h"
+#include "SpriteAnimator.h"
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
@@ -30,6 +31,7 @@ public:
 protected:
 	Vehicle();
 
+	SpriteAnimator	animator;
 	sf::Texture		texture;
 	sf::Sprite		sprite;
 

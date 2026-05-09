@@ -1,7 +1,9 @@
 #pragma once
 #include "DamagableEntity.h"
 #include "EnemyAIState.h"
-#include "Weapon.h"
+#include "Projectile.h"
+#include "SpriteAnimator.h"
+#include "SoundManager.h"
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
@@ -15,10 +17,10 @@ class Enemy : public DamagableEntity
 public:
 	virtual ~Enemy();
 
-	virtual void	onDeath() = 0; // Trigger drops, sounds, etc.
+	virtual void	onDeath() = 0; 
 	
-	void			update(float dt) override; // Empty Entity override
-	virtual void	update(float dt, class Soldier* player); // Main AI update
+	void			update(float dt) override; 
+	virtual void	update(float dt, class Soldier* player); 
 	
 	void			draw(sf::RenderWindow& window, float camOX, float camOY) override;
 	void			takeDamage(int dmg) override;
@@ -27,10 +29,12 @@ public:
 	void			setAIState(EnemyAIState* next);
 	void			activateGrudge();
 	
+	virtual class Projectile* fireWeapon(class Soldier* target);
+
 	void			loadTexture(const char* path);
+	void			setSoundManager(class SoundManager* sm);
 	int				getScoreValue() const;
 
-	// Accessors for states
 	void			setVelocityX(float vx);
 	void			setVelocityY(float vy);
 	void			setFacingRight(bool right);
@@ -39,8 +43,9 @@ public:
 protected:
 	Enemy();
 
-	EnemyAIState*	currentAI;		// OWNED
-	Weapon*			weapon;			// OWNED, nullable
+	SpriteAnimator	animator;
+	EnemyAIState*	currentAI;		
+	Weapon*			weapon;			
 	
 	sf::Texture		texture;
 	sf::Sprite		sprite;
@@ -53,4 +58,7 @@ protected:
 	float			velocityX;
 	float			velocityY;
 	bool			facingRight;
+
+	float			hitFlashTimer;
+	class SoundManager* soundManager;	
 };

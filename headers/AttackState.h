@@ -17,4 +17,5 @@ public:
 
 private:
 	float	fireTimer;
+	float	fireRate;
 };

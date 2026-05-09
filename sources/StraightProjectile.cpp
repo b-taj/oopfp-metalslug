@@ -16,8 +16,10 @@ void StraightProjectile::update(float dt)
 	x += velocityX * dt;
 	y += velocityY * dt;
 
-	// Bounds check
-	if (x < -100 || x > LEVEL_WIDTH * CELL_SIZE + 100 || y < -500 || y > SCREEN_H + 500) {
+	// FIX 3: Projectiles persist until they leave level bounds
+	if (x < -100.0f || x > LEVEL_WIDTH * CELL_SIZE + 100.0f ||
+		y < -200.0f || y > LEVEL_HEIGHT * CELL_SIZE + 100.0f)
+	{
 		active = false;
 	}
 }

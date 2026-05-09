@@ -12,11 +12,13 @@ class Weapon
 public:
 	virtual ~Weapon() = default;
 
-	virtual Projectile* fire(float x, float y, float angle) = 0;
+	virtual class Projectile* fire(float x, float y, float angle, class SoundManager* sm = nullptr) = 0;
 	virtual WeaponType	getType() const = 0;
+...
 
 	void				update(float dt);
 	bool				canFire() const;
+	bool				isOutOfAmmo() const;
 	void				reload(int amount);
 
 	int					getAmmo() const;

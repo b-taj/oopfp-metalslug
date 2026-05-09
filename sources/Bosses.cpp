@@ -121,6 +121,7 @@ void UltimateBoss::shootPlayer(Soldier* player) { getCurrentBoss()->shootPlayer(
 
 void UltimateBoss::takeDamage(int dmg) {
 	Boss::takeDamage(dmg);
+	if (soundManager) soundManager->play("boss_hit");
 	switch (currentPhase) {
 		case BossPhase::GROUND: groundHp -= dmg; break;
 		case BossPhase::AERIAL: aerialHp -= dmg; break;

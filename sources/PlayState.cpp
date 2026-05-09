@@ -29,27 +29,25 @@ void PlayState::update(float dt)
 {
 	elapsedTime += dt;
 	
-	// Character Swapping Logic (Z Key)
-	bool zIsPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Z);
-	if (zIsPressed && !zWasPressed) {
+	// Character Swapping Edge Detection (FIX 1)
+	bool zDown = sf::Keyboard::isKeyPressed(sf::Keyboard::Z);
+	if (zDown && !zWasPressed) {
 		float oldX = characters[activeCharIdx]->getX();
 		float oldY = characters[activeCharIdx]->getY();
 		activeCharIdx = (activeCharIdx + 1) % 4;
 		characters[activeCharIdx]->setPosition(oldX, oldY);
 	}
-	zWasPressed = zIsPressed;
+	zWasPressed = zDown;
 
 	// Update active character and subsystems
 	characters[activeCharIdx]->update(dt);
 	if (level) {
 		level->update(dt, *scoreManager);
-		camera->update(characters[activeCharIdx]->getX(), characters[activeCharIdx]->getY());
+		camera->update(characters[activeCharIdx]->getX(), characters[activeCharIdx]->getY(), dt);
 		
 		// UNDERWATER INTEGRATION (Prompt 12.2)
 		if (soundManager) {
-			// Check if player is in water or AquaticBiome
-			// For simplicity: check y against seaLevel if AquaticBiome is active
-			if (characters[activeCharIdx]->getY() > 800.0f) { // Example threshold
+			if (characters[activeCharIdx]->getY() > 800.0f) { 
 				soundManager->setUnderwater(true);
 			} else {
 				soundManager->setUnderwater(false);
@@ -57,6 +55,7 @@ void PlayState::update(float dt)
 		}
 	}
 	
+	// FIX 6: HUD draws current active character stats every frame
 	hud->update(characters[activeCharIdx]->getHp(), characters[activeCharIdx]->getMaxHp(), 
 				scoreManager->getScore(), characters[activeCharIdx]->getName(), 
 				0, characters[activeCharIdx]->getGrenadeCount(), dt);
@@ -75,7 +74,11 @@ void PlayState::takeSnapshot(float dt)
 	snap.ammo = 0; 
 	snap.grenadeCount = characters[activeCharIdx]->getGrenadeCount();
 	snap.timestamp = elapsedTime;
-	std::strncpy(snap.weaponType, "PISTOL", 32);
+	const char* wType = "PISTOL";
+	for (int i = 0; i < 31 && wType[i] != '\0'; i++) {
+		snap.weaponType[i] = wType[i];
+		snap.weaponType[i + 1] = '\0';
+	}
 
 	timeline.recordFrame(snap);
 }

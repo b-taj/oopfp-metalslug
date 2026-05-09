@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "../headers/ScoreManager.h"
 #include <fstream>
 #include <cstring>
@@ -54,11 +55,17 @@ void ScoreManager::addToLeaderboard(const char* name, int newScore)
 		// Shift down
 		for (int i = 9; i > pos; --i) {
 			highScores[i] = highScores[i - 1];
-			std::strncpy(highScoreNames[i], highScoreNames[i - 1], 32);
+			for (int j = 0; j < 31 && highScoreNames[i - 1][j] != '\0'; j++) {
+				highScoreNames[i][j] = highScoreNames[i - 1][j];
+				highScoreNames[i][j + 1] = '\0';
+			}
 		}
 		// Insert
 		highScores[pos] = newScore;
-		std::strncpy(highScoreNames[pos], name, 32);
+		for (int j = 0; j < 31 && name[j] != '\0'; j++) {
+			highScoreNames[pos][j] = name[j];
+			highScoreNames[pos][j + 1] = '\0';
+		}
 		if (highScoreCount < 10) highScoreCount++;
 	}
 }

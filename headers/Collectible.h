@@ -1,6 +1,7 @@
 #pragma once
 #include "Entity.h"
 #include "Enums.h"
+#include "SoundManager.h"
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
@@ -19,6 +20,7 @@ public:
 	void			draw(sf::RenderWindow& w, float cx, float cy) override;
 	
 	void			checkPickup(class Soldier* s);
+	void			setSoundManager(class SoundManager* sm);
 	CollectibleType getType() const;
 
 protected:
@@ -29,4 +31,5 @@ protected:
 	CollectibleType ctype;
 	bool			pickedUp;
 	float			bobTimer;
+	class SoundManager* soundManager;
 };

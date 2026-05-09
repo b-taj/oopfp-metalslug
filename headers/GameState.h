@@ -19,4 +19,7 @@ public:
 	virtual void		render(sf::RenderWindow& window) = 0;
 	virtual void		onExit() = 0;
 	virtual GameStateID	getID() const = 0;
+
+	virtual const char* serialize() const { return ""; }
+	virtual void deserialize(const char* data) { (void)data; }
 };

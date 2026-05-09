@@ -2,7 +2,7 @@
 #include "../headers/Constants.h"
 #include <cstdio>
 
-HUD::HUD() : damageFlashTimer(0.0f)
+HUD::HUD() : damageFlashTimer(0.0f), isBossActive(false)
 {
 	damageOverlay.setSize(sf::Vector2f((float)SCREEN_W, (float)SCREEN_H));
 	damageOverlay.setFillColor(sf::Color(255, 0, 0, 0));
@@ -11,81 +11,97 @@ HUD::HUD() : damageFlashTimer(0.0f)
 void HUD::init()
 {
 	if (font.loadFromFile("Sprites/font.ttf")) {
-		hpText.setFont(font);
 		scoreText.setFont(font);
 		nameText.setFont(font);
 		ammoText.setFont(font);
 		grenadeText.setFont(font);
 
-		hpText.setCharacterSize(24);
 		scoreText.setCharacterSize(24);
 		nameText.setCharacterSize(30);
+		nameText.setOutlineThickness(2.0f);
+		nameText.setOutlineColor(sf::Color::Black);
+		nameText.setFillColor(sf::Color::Yellow);
+
 		ammoText.setCharacterSize(24);
 		grenadeText.setCharacterSize(24);
 
-		nameText.setPosition(20, 20);
-		hpText.setPosition(20, 60);
-		scoreText.setPosition(SCREEN_W - 200, 20);
-		ammoText.setPosition(20, SCREEN_H - 100);
-		grenadeText.setPosition(20, SCREEN_H - 60);
+		hpBg.setSize(sf::Vector2f(200.f, 18.f));
+		hpBg.setPosition(10.f, 10.f);
+		hpBg.setFillColor(sf::Color(60, 60, 60));
 
-		healthBarBG.setSize(sf::Vector2f(200, 20));
-		healthBarBG.setFillColor(sf::Color(50, 50, 50));
-		healthBarBG.setPosition(100, 65);
+		hpFill.setSize(sf::Vector2f(200.f, 18.f));
+		hpFill.setPosition(10.f, 10.f);
 
-		healthBar.setSize(sf::Vector2f(200, 20));
-		healthBar.setFillColor(sf::Color::Red);
-		healthBar.setPosition(100, 65);
+		bossHpBg.setSize(sf::Vector2f(600.f, 20.f));
+		bossHpBg.setPosition(500.f, 10.f);
+		bossHpBg.setFillColor(sf::Color(80, 0, 0));
+
+		bossHpFill.setSize(sf::Vector2f(600.f, 20.f));
+		bossHpFill.setPosition(500.f, 10.f);
+		bossHpFill.setFillColor(sf::Color(220, 20, 20));
 	}
 }
 
-void HUD::update(int hp, int maxHp, int score, const char* name, int ammo, int grenades, float dt)
+void HUD::update(int hp, int maxHp, int score, const char* name, int ammo, int grenades, float dt, int bossHp, int bossMaxHp, bool bossActive)
 {
 	char buffer[64];
 	
-	std::snprintf(buffer, sizeof(buffer), "NAME: %s", name);
-	nameText.setString(buffer);
-
-	std::snprintf(buffer, sizeof(buffer), "HP: %d/%d", hp, maxHp);
-	hpText.setString(buffer);
+	nameText.setString(name);
+	nameText.setPosition(10.f, SCREEN_H - 45.f);
 
 	std::snprintf(buffer, sizeof(buffer), "SCORE: %06d", score);
 	scoreText.setString(buffer);
+	scoreText.setPosition(SCREEN_W - scoreText.getLocalBounds().width - 10.f, 10.f);
 
 	std::snprintf(buffer, sizeof(buffer), "AMMO: %d", ammo);
 	ammoText.setString(buffer);
+	ammoText.setPosition(10.f, SCREEN_H - 100.f);
 
 	std::snprintf(buffer, sizeof(buffer), "GRENADES: %d", grenades);
 	grenadeText.setString(buffer);
+	grenadeText.setPosition(10.f, SCREEN_H - 130.f);
 
-	float hpRatio = (float)hp / maxHp;
-	if (hpRatio < 0) hpRatio = 0;
-	healthBar.setSize(sf::Vector2f(200.0f * hpRatio, 20.0f));
+	// Player HP Bar Logic
+	float ratio = (float)hp / (float)maxHp;
+	if (ratio < 0) ratio = 0;
+	hpFill.setSize(sf::Vector2f(200.f * ratio, 18.f));
+	sf::Uint8 r = (sf::Uint8)(255.f * (1.0f - ratio));
+	sf::Uint8 g = (sf::Uint8)(255.f * ratio);
+	hpFill.setFillColor(sf::Color(r, g, 0));
+
+	// Boss HP Bar Logic
+	isBossActive = bossActive;
+	if (isBossActive && bossMaxHp > 0) {
+		float bRatio = (float)bossHp / (float)bossMaxHp;
+		if (bRatio < 0) bRatio = 0;
+		bossHpFill.setSize(sf::Vector2f(600.f * bRatio, 20.f));
+	}
 
 	if (damageFlashTimer > 0) {
 		damageFlashTimer -= dt;
 		if (damageFlashTimer < 0) damageFlashTimer = 0;
-		int alpha = (int)((damageFlashTimer / 1.0f) * 128);
+		sf::Uint8 alpha = (sf::Uint8)((damageFlashTimer / 1.0f) * 120.f);
 		damageOverlay.setFillColor(sf::Color(255, 0, 0, alpha));
 	}
 }
 
 void HUD::draw(sf::RenderWindow& w)
 {
+	w.draw(hpBg);
+	w.draw(hpFill);
 	w.draw(nameText);
 	w.draw(scoreText);
-	w.draw(hpText);
-	w.draw(healthBarBG);
-	w.draw(healthBar);
 	w.draw(ammoText);
 	w.draw(grenadeText);
+
+	if (isBossActive) {
+		w.draw(bossHpBg);
+		w.draw(bossHpFill);
+	}
 
 	if (damageFlashTimer > 0) {
 		w.draw(damageOverlay);
 	}
 }
 
-void HUD::triggerDamageFlash()
-{
-	damageFlashTimer = 1.0f;
-}
+void HUD::triggerDamageFlash() { damageFlashTimer = 1.0f; }

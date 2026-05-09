@@ -21,7 +21,11 @@ void ScoreManager::recordDeath(Soldier* s, float time)
 	df.posX = s->getX();
 	df.posY = s->getY();
 	df.timeSinceCheckpoint = time;
-	std::strncpy(df.weapon, "CURRENT", 32);
+	const char* currentWep = "CURRENT";
+	for (int i = 0; i < 31 && currentWep[i] != '\0'; i++) {
+		df.weapon[i] = currentWep[i];
+		df.weapon[i + 1] = '\0';
+	}
 }
 
 bool ScoreManager::matchesDeathPattern(Soldier* s)

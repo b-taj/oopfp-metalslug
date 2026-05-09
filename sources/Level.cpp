@@ -1,7 +1,7 @@
 #include "../headers/Level.h"
+#include "../headers/Camera.h"
+#include "../headers/ScoreManager.h"
 #include "../headers/Constants.h"
-#include "../headers/Projectile.h"
-#include <cmath>
 
 Level::Level() 
 	: width(LEVEL_WIDTH), height(LEVEL_HEIGHT), cellSize(CELL_SIZE), 
@@ -27,21 +27,14 @@ Level::~Level()
 	for (int i = 0; i < 3; ++i) delete biomes[i];
 }
 
-void Level::loadMockLevel()
-{
-	for (int y = 0; y < height; ++y) {
-		for (int x = 0; x < width; ++x) {
-			BlockType t = (y >= 15) ? BlockType::STONE : BlockType::AIR;
-			if (y == height - 1) t = BlockType::INDESTRUCTIBLE;
-			blocks[y][x].init(x, y, t, &stoneTex);
-		}
-	}
-}
+void Level::generateDebugLevel() { loadMockLevel(); }
 
 void Level::update(float dt, ScoreManager& score)
 {
+	(void)score;
 	if (playerPtr) {
-		entityManager.update(dt, playerPtr);
+		// Pass interact key state and camera offset (0 for mock)
+		entityManager.update(dt, playerPtr, false, 0.0f);
 		entityManager.cleanupInactive();
 	}
 }
@@ -67,17 +60,17 @@ void Level::draw(sf::RenderWindow& w, Camera& cam)
 	// Entities
 	Enemy** enemies = entityManager.getEnemies();
 	for (int i = 0; i < entityManager.getEnemyCount(); ++i) {
-		enemies[i]->draw(window, camOX, camOY); // assuming draw takes offsets
+		enemies[i]->draw(w, camOX, camOY);
 	}
 	
 	Projectile** projs = entityManager.getProjectiles();
 	for (int i = 0; i < entityManager.getProjectileCount(); ++i) {
-		projs[i]->draw(window, camOX, camOY);
+		projs[i]->draw(w, camOX, camOY);
 	}
 }
 
-void Level::addProjectile(Projectile* p) { entityManager.addProjectile(p); }
-void Level::addEnemy(Enemy* e) { entityManager.addEnemy(e); }
+void Level::addProjectile(class Projectile* p) { entityManager.addProjectile(p); }
+void Level::addEnemy(class Enemy* e) { entityManager.addEnemy(e); }
 
 Block* Level::getBlock(int x, int y) {
 	if (x >= 0 && x < width && y >= 0 && y < height) return &blocks[y][x];
@@ -94,6 +87,21 @@ void Level::destroyBlock(int x, int y, int radius) {
 }
 
 void Level::setPlayerPtr(Soldier* p) { playerPtr = p; }
+
+const char** Level::getTileGrid() {
+	// Re-purposing Level grid for char** representation if needed.
+	// Since blocks is Block**, we can't directly return it as const char**.
+	// We will use a static char grid for this specific UML request context.
+	static char* rawGrid[LEVEL_HEIGHT];
+	static char actualData[LEVEL_HEIGHT][LEVEL_WIDTH];
+	for (int y = 0; y < height; ++y) {
+		for (int x = 0; x < width; ++x) {
+			actualData[y][x] = (blocks[y][x].type == BlockType::AIR) ? ' ' : '#';
+		}
+		rawGrid[y] = actualData[y];
+	}
+	return (const char**)rawGrid;
+}
 int Level::getWidth() const { return width; }
 int Level::getHeight() const { return height; }
 int Level::getCellSize() const { return cellSize; }

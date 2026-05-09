@@ -1,6 +1,6 @@
 #pragma once
 #include "Boss.h"
-#include "ConcreteWeapons.h"
+#include "Weapon.h"
 
 /**
  * IronNokana.h -- Ground boss for Phase 1.
@@ -19,6 +19,6 @@ public:
 	void	update(float dt, class Soldier* player) override;
 
 private:
-	RocketLauncher*	missileTurret;
-	FlameShot*		flameShot;
+	Weapon*	missileTurret;
+	Weapon*	flameShot;
 };

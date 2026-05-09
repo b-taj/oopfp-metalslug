@@ -4,10 +4,6 @@
 #include "HairbusterRiberts.h"
 #include "SeaSatan.h"
 
-/**
- * UltimateBoss.h -- Fused Phase 4 boss.
- */
-
 class UltimateBoss : public Boss
 {
 public:

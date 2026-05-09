@@ -33,4 +33,7 @@ private:
 	
 	bool			showGlobalBest;
 	float			timeSurvived;
+	int				enemiesKilledThisRun;
+	float			distanceTravelled;
+	int				deathCount;
 };

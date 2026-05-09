@@ -47,5 +47,8 @@ private:
 	int		innoMapVal[MAX_GENOME_CONNS];
 	int		innoMapCount;
 
+	int		currentEvalIndex; 
+	};
+
 	int		currentEvalIndex; // For tracking who is playing
 };

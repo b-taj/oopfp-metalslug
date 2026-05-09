@@ -1,10 +1,6 @@
 #pragma once
 #include "Boss.h"
-#include "ConcreteWeapons.h"
-
-/**
- * SeaSatan.h -- Aquatic boss for Phase 3.
- */
+#include "Weapon.h"
 
 class SeaSatan : public Boss
 {
@@ -19,7 +15,7 @@ public:
 	void	update(float dt, class Soldier* player) override;
 
 private:
-	HeavyMachineGun* leftGun;
-	HeavyMachineGun* rightGun;
-	RocketLauncher*	 rocketLauncher;
+	Weapon* leftGun;
+	Weapon* rightGun;
+	Weapon* rocketLauncher;
 };

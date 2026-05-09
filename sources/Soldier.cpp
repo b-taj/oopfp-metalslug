@@ -1,13 +1,16 @@
 #include "../headers/Soldier.h"
 #include "../headers/NormalState.h"
 #include "../headers/Projectile.h"
+#include "../headers/BallisticProjectile.h"
 #include "../headers/Constants.h"
 #include <iostream>
+#include <cmath>
 
 Soldier::Soldier()
 	: speedX(200.0f), speedY(JUMP_FORCE), velocityX(0.0f), velocityY(0.0f), speedMult(1.0f),
-	  onGround(false), facingRight(true), knifeOnly(false), lives(2), grenadeCount(10),
-	  currentWeapon(nullptr)
+	  accel(1800.0f), friction(2400.0f), maxSpeedX(280.0f),
+	  onGround(false), facingRight(true), jumpWasPressed(false), knifeOnly(false), 
+	  lives(2), grenadeCount(10), currentWeapon(nullptr), soundManager(nullptr)
 {
 	active = true;
 	width = 50.0f;
@@ -15,29 +18,22 @@ Soldier::Soldier()
 	hp = 100;
 	maxHp = 100;
 	damageLevel = 0;
-
-	pistol = new Pistol(); // Default weapon
-	currentWeapon = pistol;
 	
 	currentTransform = new NormalState();
-	// Note: onEnter(this) called during first setTransformationState or initialization
 }
 
 Soldier::~Soldier()
 {
 	if (currentTransform) delete currentTransform;
-	if (pistol) delete pistol;
-	if (currentWeapon != pistol) delete currentWeapon;
+	if (currentWeapon) delete currentWeapon;
 }
 
 void Soldier::update(float dt)
 {
 	if (!active) return;
 
-	// Call current state logic (Zombie/Mummy timers, etc.)
 	if (currentTransform) currentTransform->update(this, dt);
 
-	// Basic Physics
 	if (!onGround) {
 		velocityY += GRAVITY * dt;
 	}
@@ -45,8 +41,18 @@ void Soldier::update(float dt)
 	x += velocityX * dt;
 	y += velocityY * dt;
 
-	// Reset horiz velocity for next frame (input will re-set it)
-	velocityX = 0.0f;
+	// ANIMATION TRANSITION RULES
+	if (!animator.isFinished() && !animator.getCurrentAnimationLoops()) 
+		goto apply_anim;
+
+	if (hp <= 0) { animator.play("die"); goto apply_anim; }
+	if (!onGround) { animator.play("jump"); goto apply_anim; }
+	if (std::abs(velocityX) > 1.0f) { animator.play("walk"); goto apply_anim; }
+	animator.play("idle");
+
+apply_anim:
+	animator.update(dt);
+	animator.applyToSprite(sprite);
 }
 
 void Soldier::draw(sf::RenderWindow& window, float camOffsetX, float camOffsetY)
@@ -54,9 +60,9 @@ void Soldier::draw(sf::RenderWindow& window, float camOffsetX, float camOffsetY)
 	if (!active) return;
 	sprite.setPosition(x - camOffsetX, y - camOffsetY);
 	
-	// Handle mirroring
-	if (facingRight) sprite.setScale(std::abs(sprite.getScale().x), sprite.getScale().y);
-	else sprite.setScale(-std::abs(sprite.getScale().x), sprite.getScale().y);
+	// ENFORCED SCALE MIRRORING
+	float baseScaleX = std::abs(sprite.getScale().x);
+	sprite.setScale(facingRight ? baseScaleX : -baseScaleX, sprite.getScale().y);
 
 	window.draw(sprite);
 }
@@ -64,25 +70,14 @@ void Soldier::draw(sf::RenderWindow& window, float camOffsetX, float camOffsetY)
 void Soldier::takeDamage(int dmg)
 {
 	hp -= dmg;
+	if (soundManager) soundManager->play("player_hit");
 	if (hp <= 0) die();
-	else {
-		float ratio = (float)hp / maxHp;
-		if (ratio < 0.3f) damageLevel = 2;
-		else if (ratio < 0.6f) damageLevel = 1;
-	}
 }
 
 void Soldier::die()
 {
-	hp = 0;
-	lives--;
-	if (lives < 0) {
-		active = false;
-	} else {
-		// Respawn logic or death animation trigger
-		hp = maxHp;
-		damageLevel = 0;
-	}
+	active = false;
+	if (soundManager) soundManager->play("enemy_die");
 }
 
 void Soldier::setTransformationState(TransformationState* next)
@@ -96,16 +91,24 @@ void Soldier::setTransformationState(TransformationState* next)
 	currentTransform->onEnter(this);
 }
 
-void Soldier::forceKnifeOnly(bool f) { knifeOnly = f; }
+void Soldier::moveLeft(float dt) { velocityX = -speedX * speedMult; facingRight = false; }
+void Soldier::moveRight(float dt) { velocityX = speedX * speedMult; facingRight = true; }
+void Soldier::jump() { if (onGround) { velocityY = speedY; onGround = false; if (soundManager) soundManager->play("jump"); } }
 
-void Soldier::setSpeedMultiplier(float m) { speedMult = m; }
+Projectile* Soldier::throwGrenade(float angle) {
+	if (grenadeCount > 0) {
+		grenadeCount--;
+		float rad = angle * 3.14159f / 180.0f;
+		return new BallisticProjectile(x, y, std::cos(rad)*600.0f, std::sin(rad)*600.0f, 20, true, nullptr);
+	}
+	return nullptr;
+}
 
-void Soldier::loadTexture(const char* path) { texture.loadFromFile(path); sprite.setTexture(texture); }
-
-void Soldier::setSpriteScale(float sx, float sy) { sprite.setScale(sx, sy); }
-
+float Soldier::getVelocityX() const { return velocityX; }
+float Soldier::getVelocityY() const { return velocityY; }
+bool Soldier::isOnGround() const { return onGround; }
+void Soldier::setSoundManager(SoundManager* sm) { soundManager = sm; }
 void Soldier::setSpeed(float spd, float jumpForce) { speedX = spd; speedY = jumpForce; }
-
 int Soldier::getLives() const { return lives; }
 int Soldier::getGrenadeCount() const { return grenadeCount; }
 int Soldier::getHp() const { return hp; }
@@ -115,27 +118,23 @@ void Soldier::resolveGround(char** grid, int h, int w, int cell)
 	onGround = false;
 	int tileY = static_cast<int>(y + height) / cell;
 	int tileX = static_cast<int>(x + width/2.0f) / cell;
-
 	if (tileY >= 0 && tileY < h && tileX >= 0 && tileX < w) {
 		if (grid[tileY][tileX] != ' ') {
-			y = (float)(tileY * cell - height);
-			velocityY = 0;
-			onGround = true;
+			if (velocityY > 0.0f) {
+				y = (float)(tileY * cell - height);
+				velocityY = 0.0f;
+				onGround = true;
+			}
 		}
 	}
 }
 
 Projectile* Soldier::shoot(float angle)
 {
-	if (knifeOnly) return nullptr; // Melee weapons fire returns nullptr
-
+	if (knifeOnly) return nullptr;
 	if (currentWeapon && currentWeapon->canFire()) {
-		return currentWeapon->fire(x, y, angle);
+		animator.play("shoot"); // Trigger animation
+		return currentWeapon->fire(x, y, angle, soundManager);
 	}
-
-	if (pistol && pistol->canFire()) {
-		return pistol->fire(x, y, angle);
-	}
-
 	return nullptr;
 }
