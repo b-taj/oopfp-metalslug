@@ -12,7 +12,6 @@ bool SoundManager::load(const char* id, const char* filePath)
 	
 	SoundEntry& e = entries[entryCount];
 	
-	// Manual string copy to avoid unsafe strncpy/strncpy_s issues
 	int j = 0;
 	for (; j < 31 && id[j] != '\0'; j++) {
 		e.id[j] = id[j];
@@ -40,8 +39,12 @@ void SoundManager::playMusic(const char* file)
 {
 	bgMusic.openFromFile(file);
 	bgMusic.setLoop(true);
+    bgMusic.setVolume(30.0f);
 	bgMusic.play();
 }
+
+void SoundManager::pauseMusic() { bgMusic.pause(); }
+void SoundManager::resumeMusic() { bgMusic.play(); }
 
 void SoundManager::setUnderwater(bool u)
 {

@@ -1,9 +1,16 @@
 #include "../headers/MenuState.h"
 #include "../headers/GameStateManager.h"
+#include "../headers/SoundManager.h"
 #include <SFML/Window/Keyboard.hpp>
 
-MenuState::MenuState(GameStateManager* gsm) : stateManager(gsm)
+MenuState::MenuState(GameStateManager* gsm, SoundManager* sm) : stateManager(gsm), soundManager(sm)
 {
+	if (bgTexture.loadFromFile("Sprites/backgrounds/main_menu.png")) {
+		bgSprite.setTexture(bgTexture);
+		sf::Vector2u size = bgTexture.getSize();
+		bgSprite.setScale(1600.0f / size.x, 900.0f / size.y);
+	}
+
 	if (font.loadFromFile("Sprites/font.ttf")) {
 		title.setFont(font);
 		title.setString("METAL SLUG VS");
@@ -20,7 +27,12 @@ MenuState::MenuState(GameStateManager* gsm) : stateManager(gsm)
 	}
 }
 
-void MenuState::onEnter() {}
+void MenuState::onEnter() 
+{
+	if (soundManager) {
+		soundManager->playMusic("Audio/bgm_menu.ogg");
+	}
+}
 
 void MenuState::handleEvents(sf::RenderWindow& window, sf::Event& event)
 {
@@ -38,8 +50,7 @@ void MenuState::update(float dt) { (void)dt; }
 
 void MenuState::render(sf::RenderWindow& window)
 {
-	window.draw(title);
-	for (int i = 0; i < 3; ++i) window.draw(options[i]);
+	window.draw(bgSprite);
 }
 
 void MenuState::onExit() {}

@@ -2,6 +2,8 @@
 #include "GameState.h"
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/Text.hpp>
+#include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/Texture.hpp>
 
 /**
  * PauseState.h -- Overlay state that freezes logic.
@@ -21,4 +23,7 @@ public:
 private:
 	sf::Font	font;
 	sf::Text	text;
+
+	sf::Texture bgTexture;
+	sf::Sprite  bgSprite;
 };

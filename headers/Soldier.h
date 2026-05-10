@@ -28,7 +28,7 @@ public:
 
 	void			setTransformationState(TransformationState* next);
 	void			forceKnifeOnly(bool f);
-	void			resolveGround(char** grid, int h, int w, int cell);
+	void			resolveGround(const char** grid, int h, int w, int cell);
 	
 	class Projectile* shoot(float angle);
 	
@@ -49,6 +49,7 @@ public:
 	int				getLives() const;
 	int				getGrenadeCount() const;
 	int				getHp() const;
+	int				getAmmo() const;
 
 	// Movement utility for states
 	void			setSpeedMultiplier(float m);

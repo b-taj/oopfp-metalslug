@@ -5,10 +5,10 @@
 
 PlayerSoldier::PlayerSoldier() : Soldier(), specialTimer(0.0f), specialActive(false)
 {
-	// Movement stats per Priority 2
-	accel      = 1800.0f;
-	friction   = 2400.0f;
-	maxSpeedX  = 280.0f;
+	// Arcadey movement stats (Boosted)
+	accel      = 2500.0f;
+	friction   = 3000.0f;
+	maxSpeedX  = 450.0f;
 }
 
 void PlayerSoldier::update(float dt)
