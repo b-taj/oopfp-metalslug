@@ -1,6 +1,6 @@
 #pragma once
 #include "Terrain.h"
-#include "NEAT.h"
+#include "NEATManager.h"
 
 class Level;
 

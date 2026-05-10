@@ -1,7 +1,12 @@
 #include "../headers/ScoreManager.h"
+#include "../headers/Entity.h"
 #include "../headers/Soldier.h"
+#include "../headers/Enemy.h"
 #include <cmath>
 #include <cstring>
+
+class Soldier;
+class Enemy;
 
 // ... existing ScoreManager implementation ...
 

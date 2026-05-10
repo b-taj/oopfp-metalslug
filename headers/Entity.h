@@ -19,6 +19,8 @@ public:
 	
 	float			getX() const;
 	float			getY() const;
+	float			getWidth() const;
+	float			getHeight() const;
 	bool			isActive() const;
 
 	void			setPosition(float nx, float ny);

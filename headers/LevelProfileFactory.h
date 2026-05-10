@@ -24,27 +24,27 @@ protected:
 
 class AmplifiedFactory : public LevelProfileFactory {
 public:
-    AmplifiedFactory() { amplitude = 20.0f; frequency = 0.05f; octaves = 6; oceanDepth = 12.0f; }
+    AmplifiedFactory() { amplitude = 8.0f; frequency = 0.05f; octaves = 6; oceanDepth = 12.0f; }
     FractalNoise createNoise() const override { return FractalNoise(1234, octaves, amplitude, frequency); }
-    float getAmplitude() const override { return amplitude; }
+    float getAmplitude() const override { return 8.0f; }
     float getFrequency() const override { return frequency; }
     float getOceanDepth() const override { return oceanDepth; }
 };
 
 class FlatFactory : public LevelProfileFactory {
 public:
-    FlatFactory() { amplitude = 5.0f; frequency = 0.02f; octaves = 3; oceanDepth = 15.0f; }
+    FlatFactory() { amplitude = 2.0f; frequency = 0.02f; octaves = 3; oceanDepth = 15.0f; }
     FractalNoise createNoise() const override { return FractalNoise(1234, octaves, amplitude, frequency); }
-    float getAmplitude() const override { return amplitude; }
+    float getAmplitude() const override { return 2.0f; }
     float getFrequency() const override { return frequency; }
     float getOceanDepth() const override { return oceanDepth; }
 };
 
 class NormalFactory : public LevelProfileFactory {
 public:
-    NormalFactory() { amplitude = 12.0f; frequency = 0.03f; octaves = 4; oceanDepth = 14.0f; }
+    NormalFactory() { amplitude = 5.0f; frequency = 0.03f; octaves = 4; oceanDepth = 14.0f; }
     FractalNoise createNoise() const override { return FractalNoise(1234, octaves, amplitude, frequency); }
-    float getAmplitude() const override { return amplitude; }
+    float getAmplitude() const override { return 5.0f; }
     float getFrequency() const override { return frequency; }
     float getOceanDepth() const override { return oceanDepth; }
 };

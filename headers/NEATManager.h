@@ -25,14 +25,14 @@ public:
 	void	loadGlobalBest(const char* file);
 
 private:
-	Genome*	crossover(Genome* p1, Genome* p2);
+	Genome* crossover(Genome* p1, Genome* p2);
 	int		getInnovation(int inNode, int outNode);
 	float	compatDistance(Genome* a, Genome* b);
 
-	Genome*	population[MAX_POPULATION];
+	Genome* population[MAX_POPULATION];
 	int		populationSize;
 	
-	Species	species[MAX_SPECIES];
+	Species species[MAX_SPECIES];
 	int		speciesCount;
 	
 	int		generation;
@@ -40,15 +40,12 @@ private:
 	
 	float	c1, c2, c3, deltaT;
 	
-	Genome*	globalBest;
+	Genome* globalBest;
 	
 	int		innoMapIn[MAX_GENOME_CONNS];
 	int		innoMapOut[MAX_GENOME_CONNS];
 	int		innoMapVal[MAX_GENOME_CONNS];
 	int		innoMapCount;
-
-	int		currentEvalIndex; 
-	};
 
 	int		currentEvalIndex; // For tracking who is playing
 };

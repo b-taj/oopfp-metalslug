@@ -8,15 +8,16 @@
 #include "SoundManager.h"
 #include "Timeline.h"
 
+class GameStateManager;
+
 /**
  * PlayState.h -- The active gameplay state.
- * Aggregates core subsystems owned by the Game class.
  */
 
 class PlayState : public GameState
 {
 public:
-	PlayState(Level* lvl, PlayerSoldier** heroes, Camera* cam, HUD* h, ScoreManager* s, SoundManager* snd);
+	PlayState(Level* lvl, PlayerSoldier** heroes, Camera* cam, HUD* h, ScoreManager* s, SoundManager* snd, GameStateManager* gsm);
 
 	void			onEnter() override;
 	void			handleEvents(sf::RenderWindow& window, sf::Event& event) override;
@@ -34,10 +35,12 @@ private:
 	HUD*			hud;
 	ScoreManager*	scoreManager;
 	SoundManager*	soundManager;
+	GameStateManager* stateManager;
 	Timeline		timeline;
 
 	int				activeCharIdx;
 	float			zPressTimer;
 	bool			zWasPressed;
 	float			elapsedTime;
+	float			bossTransitionFlash;
 };

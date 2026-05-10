@@ -37,7 +37,7 @@ void Game::run()
 	soundManager.load("pickup", "Audio/pickup.wav");
 
 	stateManager.registerState(new MenuState());
-	stateManager.registerState(new PlayState(&level, characters, &camera, &hud, &scoreManager, &soundManager));
+	stateManager.registerState(new PlayState(&level, characters, &camera, &hud, &scoreManager, &soundManager, &stateManager));
 	stateManager.registerState(new PauseState());
 	stateManager.registerState(new SelfPlayState(&level, &camera, &hud, &scoreManager));
 

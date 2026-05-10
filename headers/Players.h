@@ -4,13 +4,34 @@
 class PlayerMarco : public PlayerSoldier {
 public:
     PlayerMarco() {
-        hp = 100; speedX = 200.0f; grenadeCount = 8;
-        // Placeholder animations
-        SpriteAnimator::Frame f = { sf::IntRect(0,0,100,100), 0.1f };
-        animator.addAnimation("idle", &f, 1, true);
-        animator.addAnimation("walk", &f, 1, true);
-        animator.addAnimation("jump", &f, 1, true);
-        animator.addAnimation("die", &f, 1, false);
+        hp = 100; speedX = 200.0f; grenadeCount = 10;
+        loadTexture("Sprites/4x upscaled/Marco Rossi_4x.png");
+        animator.setScale(0.25f, 0.25f);
+
+        // Frame dimensions for 4x assets (approx 300x300 per cell)
+        int fw = 300; int fh = 300;
+
+        // Register Animations
+        SpriteAnimator::Frame idleFrames[] = { {{0, 0, fw, fh}, 0.1f} };
+        animator.addAnimation("idle", idleFrames, 1, true);
+
+        SpriteAnimator::Frame walkFrames[] = {
+            {{0, fh, fw, fh}, 0.1f}, {{fw, fh, fw, fh}, 0.1f}, {{fw*2, fh, fw, fh}, 0.1f},
+            {{fw*3, fh, fw, fh}, 0.1f}, {{fw*4, fh, fw, fh}, 0.1f}, {{fw*5, fh, fw, fh}, 0.1f}
+        };
+        animator.addAnimation("walk", walkFrames, 6, true);
+
+        SpriteAnimator::Frame jumpFrames[] = { {{0, fh*2, fw, fh}, 0.1f} };
+        animator.addAnimation("jump", jumpFrames, 1, true);
+
+        SpriteAnimator::Frame shootFrames[] = { {{0, fh*3, fw, fh}, 0.05f}, {{fw, fh*3, fw, fh}, 0.05f} };
+        animator.addAnimation("shoot", shootFrames, 2, false);
+
+        SpriteAnimator::Frame dieFrames[] = {
+            {{0, fh*4, fw, fh}, 0.12f}, {{fw, fh*4, fw, fh}, 0.12f}, 
+            {{fw*2, fh*4, fw, fh}, 0.12f}, {{fw*3, fh*4, fw, fh}, 0.12f}
+        };
+        animator.addAnimation("die", dieFrames, 4, false);
     }
     void activateSpecialPower() override {}
     float getFireRate() const override { return 1.25f; }

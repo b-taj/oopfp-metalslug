@@ -4,6 +4,7 @@
 #include "Projectile.h"
 #include "SpriteAnimator.h"
 #include "SoundManager.h"
+#include "Weapon.h"
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 

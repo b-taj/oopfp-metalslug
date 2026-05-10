@@ -1,5 +1,5 @@
 #include "../headers/NormalState.h"
-#include "../headers/Character.h" // Assuming Soldier interface for now or specific Soldier header
+#include "../headers/Soldier.h"
 
 /**
  * Implementation of Soldier is required for these methods.

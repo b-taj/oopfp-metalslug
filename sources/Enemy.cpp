@@ -1,4 +1,5 @@
 #include "../headers/Enemy.h"
+#include "../headers/Soldier.h"
 #include "../headers/PatrolState.h"
 #include "../headers/DeadAIState.h"
 #include "../headers/Constants.h"

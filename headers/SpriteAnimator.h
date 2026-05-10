@@ -4,7 +4,6 @@
 
 /**
  * SpriteAnimator.h -- Manages frame-by-frame animation state.
- * Uses fixed-size arrays to comply with No-STL constraints.
  */
 
 class SpriteAnimator
@@ -13,7 +12,7 @@ public:
 	struct Frame
 	{
 		sf::IntRect rect;
-		float duration; // seconds
+		float duration; 
 	};
 
 	struct Animation
@@ -31,6 +30,10 @@ public:
 	void update(float dt);
 	void applyToSprite(sf::Sprite& sprite) const;
 
+	void setScale(float sx, float sy) { scaleX = sx; scaleY = sy; }
+	float getScaleX() const { return scaleX; }
+	float getScaleY() const { return scaleY; }
+
 	bool isFinished() const;
 	bool getCurrentAnimationLoops() const;
 	const char* getCurrentAnimation() const;
@@ -38,8 +41,9 @@ public:
 private:
 	Animation animations[16];
 	int animCount;
-	int currentAnim; // index
+	int currentAnim; 
 	int currentFrame;
 	float frameTimer;
 	bool finished;
+	float scaleX, scaleY;
 };

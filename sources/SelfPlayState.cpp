@@ -49,7 +49,7 @@ void SelfPlayState::update(float dt)
 	inputs[4] = agent->getVelocityX() / 300.0f;
 	inputs[5] = agent->getVelocityY() / 900.0f;
 
-	Enemy* nearest = level->getEntities().getNearestEnemy(agent->getX(), agent->getY());
+	Enemy* nearest = level->getEntityManager().getNearestEnemy(agent->getX(), agent->getY());
 	inputs[6] = nearest ? (nearest->getX() / worldW) : 0.5f;
 	inputs[7] = nearest ? (nearest->getY() / worldH) : 0.5f;
 	inputs[8] = nearest ? ((nearest->getX() - agent->getX()) / worldW) : 0.0f;
@@ -72,7 +72,7 @@ void SelfPlayState::update(float dt)
 
 	agent->update(dt);
 	level->update(dt, *scoreManager);
-	camera->update(agent->getX(), agent->getY());
+	camera->update(agent->getX(), agent->getY(), dt);
 }
 
 void SelfPlayState::render(sf::RenderWindow& w)

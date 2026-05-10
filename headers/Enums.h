@@ -94,3 +94,12 @@ enum class NodeType
     OUTPUT,
     BIAS
 };
+
+enum class BehaviorState
+{
+    IDLE,
+    RETREATING,
+    PRESSING,
+    CONSOLIDATING,
+    STALLING
+};

@@ -29,6 +29,77 @@ Level::~Level()
 
 void Level::generateDebugLevel() { loadMockLevel(); }
 
+void Level::loadMockLevel()
+{
+    // Allocate block grid if not already done
+    if (blocks == nullptr)
+    {
+        blocks = new Block*[height];
+        for (int r = 0; r < height; r++)
+        {
+            blocks[r] = new Block[width];
+            for (int c = 0; c < width; c++)
+            {
+                blocks[r][c].gridX         = c;
+                blocks[r][c].gridY         = r;
+                blocks[r][c].type          = BlockType::AIR;
+                blocks[r][c].isDestructible   = false;
+                blocks[r][c].isIndestructible = false;
+                blocks[r][c].isWater          = false;
+            }
+        }
+    }
+
+    // Ground row at row 15 (out of 20)
+    for (int c = 0; c < width; c++)
+    {
+        blocks[15][c].type = BlockType::GRASS;
+        blocks[15][c].isDestructible = true;
+
+        // Stone below ground
+        for (int r = 16; r < height - 1; r++)
+        {
+            blocks[r][c].type = BlockType::STONE;
+            blocks[r][c].isDestructible = true;
+        }
+        // Indestructible bedrock at bottom row
+        blocks[height-1][c].type = BlockType::INDESTRUCTIBLE;
+        blocks[height-1][c].isIndestructible = true;
+    }
+
+    // A few platforms at different heights
+    for (int c = 20; c < 30; c++) blocks[11][c].type = BlockType::STONE;
+    for (int c = 40; c < 50; c++) blocks[9][c].type  = BlockType::STONE;
+    for (int c = 60; c < 70; c++) blocks[12][c].type = BlockType::STONE;
+
+    // Load tile textures
+    grassTex.loadFromFile("Sprites/blocks/grass_block_side.png");
+    stoneTex.loadFromFile("Sprites/blocks/stone.png");
+
+    // Assign textures to blocks based on type
+    for (int r = 0; r < height; r++)
+        for (int c = 0; c < width; c++)
+        {
+            switch (blocks[r][c].type)
+            {
+                case BlockType::GRASS:
+                    blocks[r][c].init(c, r, BlockType::GRASS, &grassTex);
+                    break;
+                case BlockType::STONE:
+                    blocks[r][c].init(c, r, BlockType::STONE, &stoneTex);
+                    break;
+                case BlockType::INDESTRUCTIBLE:
+                    blocks[r][c].init(c, r, BlockType::INDESTRUCTIBLE, &stoneTex);
+                    break;
+                default: 
+                    blocks[r][c].init(c, r, BlockType::AIR, nullptr);
+                    break;
+            }
+            // Note: init() already sets the sprite texture. 
+            // We ensure scaling matches CELL_SIZE if needed.
+        }
+}
+
 void Level::update(float dt, ScoreManager& score)
 {
 	(void)score;
@@ -87,6 +158,8 @@ void Level::destroyBlock(int x, int y, int radius) {
 }
 
 void Level::setPlayerPtr(Soldier* p) { playerPtr = p; }
+
+EntityManager& Level::getEntityManager() { return entityManager; }
 
 const char** Level::getTileGrid() {
 	// Re-purposing Level grid for char** representation if needed.

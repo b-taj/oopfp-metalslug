@@ -5,7 +5,7 @@
 
 // ==================== PLAINS ====================
 PlainsBiome::PlainsBiome(int start, int end) {
-	startX = start; endX = end; minAlt = 12; maxAlt = 15;
+	startX = start; endX = end; minAlt = 8; maxAlt = 12;
 }
 
 int PlainsBiome::getHeightAt(int x) {
@@ -13,9 +13,15 @@ int PlainsBiome::getHeightAt(int x) {
 }
 
 void PlainsBiome::spawnEnemies(Level* level) {
-	for (int i = startX; i < endX; i += 20) {
-		level->addEnemy(new RebelSoldier()); // Simplified spawn
-	}
+	static int spawnCounter = 0;
+	spawnCounter++;
+	if (spawnCounter % 5 != 0) return;
+
+	float spawnX = (float)(endX * CELL_SIZE - 200);
+	float spawnY = (float)((LEVEL_HEIGHT - 4) * CELL_SIZE);
+	RebelSoldier* r = new RebelSoldier();
+	r->setPosition(spawnX, spawnY);
+	level->addEnemy(r);
 }
 
 // ==================== AERIAL ====================
@@ -28,7 +34,12 @@ int AerialBiome::getHeightAt(int x) {
 }
 
 void AerialBiome::spawnEnemies(Level* level) {
-	// Spawn paratroopers or martians
+	float spawnX = (float)(endX * CELL_SIZE - 200);
+	float spawnY = (float)(3 * CELL_SIZE);
+	// Paratrooper placeholder (Rebel for now)
+	RebelSoldier* p = new RebelSoldier();
+	p->setPosition(spawnX, spawnY);
+	level->addEnemy(p);
 }
 
 // ==================== AQUATIC ====================
@@ -37,9 +48,13 @@ AquaticBiome::AquaticBiome(int start, int end) {
 }
 
 int AquaticBiome::getHeightAt(int x) {
-	return minAlt; // Flat sea floor
+	return minAlt;
 }
 
 void AquaticBiome::spawnEnemies(Level* level) {
-	// Spawn aquatic enemies
+	float spawnX = (float)(endX * CELL_SIZE - 200);
+	float spawnY = (float)((LEVEL_HEIGHT - 2) * CELL_SIZE);
+	Zombie* z = new Zombie();
+	z->setPosition(spawnX, spawnY);
+	level->addEnemy(z);
 }

@@ -10,6 +10,18 @@ build/
 out/
 
 # =========================
+# Visual Studio project files
+# =========================
+*.vcxproj.user
+*.vcxproj.filters
+*.sln.docstates
+
+# Optional:
+# Uncomment if you DO NOT want to track project structure
+# *.sln
+# *.vcxproj
+
+# =========================
 # Visual Studio metadata
 # =========================
 *.VC.db
@@ -34,6 +46,12 @@ out/
 oopfp_me.*
 Source.cpp
 TumblePOP.cpp
+
+# =========================
+# External libraries / dependencies
+# =========================
+include/
+lib/
 
 # =========================
 # Documents (DO NOT track)

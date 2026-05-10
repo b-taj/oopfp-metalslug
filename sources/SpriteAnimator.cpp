@@ -2,7 +2,8 @@
 #include <cstring>
 
 SpriteAnimator::SpriteAnimator() 
-	: animCount(0), currentAnim(-1), currentFrame(0), frameTimer(0.0f), finished(false)
+	: animCount(0), currentAnim(-1), currentFrame(0), frameTimer(0.0f), finished(false),
+	  scaleX(1.0f), scaleY(1.0f)
 {
 }
 
@@ -11,8 +12,12 @@ void SpriteAnimator::addAnimation(const char* name, Frame* frames, int count, bo
 	if (animCount >= 16) return;
 
 	Animation& anim = animations[animCount++];
-	std::strncpy(anim.name, name, 31);
-	anim.name[31] = '\0';
+	// Manual string copy to avoid unsafe strncpy
+	int j = 0;
+	for (; j < 31 && name[j] != '\0'; j++) {
+		anim.name[j] = name[j];
+	}
+	anim.name[j] = '\0';
 	anim.frameCount = (count > 32) ? 32 : count;
 	anim.loop = loop;
 
@@ -78,6 +83,6 @@ bool SpriteAnimator::getCurrentAnimationLoops() const
 }
 
 const char* SpriteAnimator::getCurrentAnimation() const
-...
+{
 	return (currentAnim != -1) ? animations[currentAnim].name : "none";
 }

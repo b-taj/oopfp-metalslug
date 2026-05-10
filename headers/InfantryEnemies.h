@@ -3,15 +3,35 @@
 #include "ConcreteWeapons.h"
 #include <iostream>
 
-// ==================== REBEL SOLDIER ====================
 class RebelSoldier : public Enemy {
 public:
     RebelSoldier() {
         hp = 2; maxHp = 2; scoreValue = 50;
         weapon = new Pistol();
+        loadTexture("Sprites/4x upscaled/Rebel Soldier_4x.png");
+        animator.setScale(0.25f, 0.25f);
+
+        int fw = 200; int fh = 200; // Smaller soldier frames
+
+        SpriteAnimator::Frame walkFrames[] = {
+            {{0, 0, fw, fh}, 0.12f}, {{fw, 0, fw, fh}, 0.12f}, 
+            {{fw*2, 0, fw, fh}, 0.12f}, {{fw*3, 0, fw, fh}, 0.12f}
+        };
+        animator.addAnimation("walk", walkFrames, 4, true);
+
+        SpriteAnimator::Frame atkFrames[] = {
+            {{0, fh, fw, fh}, 0.08f}, {{fw, fh, fw, fh}, 0.08f}, {{fw*2, fh, fw, fh}, 0.08f}
+        };
+        animator.addAnimation("attack", atkFrames, 3, false);
+
+        SpriteAnimator::Frame dieFrames[] = {
+            {{0, fh*2, fw, fh}, 0.1f}, {{fw, fh*2, fw, fh}, 0.1f}, {{fw*2, fh*2, fw, fh}, 0.1f},
+            {{fw*3, fh*2, fw, fh}, 0.1f}, {{fw*4, fh*2, fw, fh}, 0.1f}
+        };
+        animator.addAnimation("die", dieFrames, 5, false);
     }
     void onDeath() override { std::cout << "RebelSoldier down. Score +50\n"; }
-    void shootPlayer(class Soldier* player) override { /* Firing logic... */ }
+    void shootPlayer(class Soldier* player) override { (void)player; }
 };
 
 // ==================== SHIELDED SOLDIER ====================

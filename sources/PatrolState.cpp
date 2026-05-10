@@ -19,8 +19,8 @@ void PatrolState::onEnter(class Enemy* e) {
 void PatrolState::update(class Enemy* e, float dt, class Soldier* player) {
 	// Platform Edge Detection
 	if (tileGrid) {
-		int nextCol = (int)((e->getX() + (patrolDir > 0 ? e->width : 0) + patrolDir * 10.0f) / cellSz);
-		int rowBelow = (int)((e->getY() + e->height + 2) / cellSz);
+		int nextCol = (int)((e->getX() + (patrolDir > 0 ? e->getWidth() : 0) + patrolDir * 10.0f) / cellSz);
+		int rowBelow = (int)((e->getY() + e->getHeight() + 2) / cellSz);
 		
 		if (nextCol >= 0 && nextCol < gridW && rowBelow >= 0 && rowBelow < gridH) {
 			if (tileGrid[rowBelow][nextCol] == ' ') { // No floor ahead

@@ -39,6 +39,7 @@ public:
 	
 	void	setPlayerPtr(Soldier* p);
 	const char** getTileGrid();
+	EntityManager& getEntityManager();
 
 private:
 	Block**			blocks;			// [LEVEL_HEIGHT][LEVEL_WIDTH]
@@ -51,6 +52,8 @@ private:
 	Soldier*		playerPtr;
 
 	sf::Texture		stoneTex;		// Managed shared texture
+	sf::Texture		grassTex;
+	sf::Texture		waterTex;
 	
 	int				seaLevel;
 	bool			isRaining;

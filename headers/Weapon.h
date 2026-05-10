@@ -14,7 +14,6 @@ public:
 
 	virtual class Projectile* fire(float x, float y, float angle, class SoundManager* sm = nullptr) = 0;
 	virtual WeaponType	getType() const = 0;
-...
 
 	void				update(float dt);
 	bool				canFire() const;

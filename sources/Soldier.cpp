@@ -60,9 +60,9 @@ void Soldier::draw(sf::RenderWindow& window, float camOffsetX, float camOffsetY)
 	if (!active) return;
 	sprite.setPosition(x - camOffsetX, y - camOffsetY);
 	
-	// ENFORCED SCALE MIRRORING
-	float baseScaleX = std::abs(sprite.getScale().x);
-	sprite.setScale(facingRight ? baseScaleX : -baseScaleX, sprite.getScale().y);
+	float sx = facingRight ? animator.getScaleX() : -animator.getScaleX();
+	sprite.setScale(sx, animator.getScaleY());
+	animator.applyToSprite(sprite);
 
 	window.draw(sprite);
 }
@@ -78,6 +78,23 @@ void Soldier::die()
 {
 	active = false;
 	if (soundManager) soundManager->play("enemy_die");
+}
+
+void Soldier::loadTexture(const char* path)
+{
+    if (path == nullptr || path[0] == '\0') return;
+    if (!texture.loadFromFile(path))
+    {
+        // Fallback: leave texture blank — sprite will render as white rectangle
+        // This is intentional: missing texture should not crash the build
+        return;
+    }
+    sprite.setTexture(texture);
+    // Default texture rect covers full image
+    sprite.setTextureRect(sf::IntRect(
+        0, 0,
+        (int)texture.getSize().x,
+        (int)texture.getSize().y));
 }
 
 void Soldier::setTransformationState(TransformationState* next)

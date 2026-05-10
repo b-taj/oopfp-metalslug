@@ -32,3 +32,6 @@ private:
 	bool				isDeveloperMode;
 	float				devKeyTimes[3];
 	int					devKeyPressCount;
+
+	void				activateDeveloperMode();
+};

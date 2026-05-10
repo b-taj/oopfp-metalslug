@@ -48,6 +48,7 @@ public:
 
 	int				getLives() const;
 	int				getGrenadeCount() const;
+	int				getHp() const;
 
 	// Movement utility for states
 	void			setSpeedMultiplier(float m);

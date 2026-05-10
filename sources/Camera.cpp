@@ -16,8 +16,16 @@ void Camera::update(float playerX, float playerY, float dt)
 	offsetX += (targetX - offsetX) * speed * dt;
 	offsetY += (targetY - offsetY) * speed * dt;
 
+	float maxOffsetX = (float)(LEVEL_WIDTH  * CELL_SIZE) - SCREEN_W;
+	float maxOffsetY = (float)(LEVEL_HEIGHT * CELL_SIZE) - SCREEN_H;
+
 	if (offsetX < 0.0f) offsetX = 0.0f;
 	if (offsetY < 0.0f) offsetY = 0.0f;
+	if (offsetX > maxOffsetX) offsetX = maxOffsetX;
+	if (offsetY > maxOffsetY) offsetY = maxOffsetY;
+
+	if (maxOffsetX < 0.0f) offsetX = 0.0f;
+	if (maxOffsetY < 0.0f) offsetY = 0.0f;
 
 	// SCREEN SHAKE
 	if (shakeTimer > 0.0f) {

@@ -4,8 +4,8 @@
 #include <cmath>
 
 BallisticProjectile::BallisticProjectile(float sx, float sy, float vx, float vy, int dmg, bool playerOwned, EntityManager* em)
-	: gravity(GRAVITY), explosive(false), blastRadius(0.0f), burning(false), burnTimer(0.0f), entityManager(em),
-	  tileGrid(nullptr), gridH(0), gridW(0), cellSz(1)
+	: gravity(900.0f), explosive(false), blastRadius(0.0f), burning(false), burnTimer(0.0f), entityManager(em),
+	  tileGrid(nullptr), gridH(0), gridW(0), cellSz(1), soundManager(nullptr)
 {
 	x = sx; y = sy;
 	velocityX = vx; velocityY = vy;
@@ -53,7 +53,7 @@ void BallisticProjectile::setSoundManager(SoundManager* sm)
 }
 
 void BallisticProjectile::explode()
-...
+{
 	if (soundManager) soundManager->play("explosion");
 	if (!entityManager) return;
 

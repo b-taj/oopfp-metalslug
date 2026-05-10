@@ -20,10 +20,14 @@ void TerrainGenerator::setProfile(LevelProfileFactory* f)
 
 float TerrainGenerator::getHeightAt(float worldX)
 {
-	// Noise sample shifted and scaled to grid height
 	float sample = fractalNoise.sample(worldX, 0.0f);
-	float baseHeight = 15.0f; // Typical floor
-	return baseHeight - (sample * (profile ? profile->getAmplitude() : 5.0f));
+	int baseHeight = LEVEL_HEIGHT / 2;
+	int surfaceY = baseHeight - (int)(sample * (profile ? profile->getAmplitude() : 5.0f));
+
+	if (surfaceY < 3) surfaceY = 3;
+	if (surfaceY > LEVEL_HEIGHT - 3) surfaceY = LEVEL_HEIGHT - 3;
+
+	return (float)surfaceY;
 }
 
 void TerrainGenerator::generateChunk(int chunkX, Block** blockGrid, int gridHeight, int gridWidth, int cellSize, sf::Texture* tex)
@@ -33,7 +37,6 @@ void TerrainGenerator::generateChunk(int chunkX, Block** blockGrid, int gridHeig
 		if (cachedChunkX[i] == chunkX) return; 
 	}
 
-	// Simple generation for the provided grid
 	for (int x = 0; x < gridWidth; ++x) {
 		float worldX = (float)(chunkX * gridWidth + x);
 		int surfaceY = (int)getHeightAt(worldX);
