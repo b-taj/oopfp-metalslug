@@ -2,6 +2,7 @@
 #include "../headers/Camera.h"
 #include "../headers/ScoreManager.h"
 #include "../headers/Constants.h"
+#include <cmath>
 
 Level::Level() 
 	: width(LEVEL_WIDTH), height(LEVEL_HEIGHT), cellSize(CELL_SIZE), 
@@ -13,6 +14,7 @@ Level::Level()
 	}
 
 	stoneTex.loadFromFile("Sprites/blocks/stone.png");
+	grassTex.loadFromFile("Sprites/blocks/grass_block_side.png");
 
 	biomes[0] = new AerialBiome(0, 50);
 	biomes[1] = new PlainsBiome(51, 150);
@@ -23,88 +25,48 @@ Level::~Level()
 {
 	for (int i = 0; i < height; ++i) delete[] blocks[i];
 	delete[] blocks;
-	
 	for (int i = 0; i < 3; ++i) delete biomes[i];
 }
 
-void Level::generateDebugLevel() { loadMockLevel(); }
-
 void Level::loadMockLevel()
 {
-    // Allocate block grid if not already done
-    if (blocks == nullptr)
-    {
-        blocks = new Block*[height];
-        for (int r = 0; r < height; r++)
-        {
-            blocks[r] = new Block[width];
-            for (int c = 0; c < width; c++)
-            {
-                blocks[r][c].gridX         = c;
-                blocks[r][c].gridY         = r;
-                blocks[r][c].type          = BlockType::AIR;
-                blocks[r][c].isDestructible   = false;
-                blocks[r][c].isIndestructible = false;
-                blocks[r][c].isWater          = false;
-            }
+    // 1. Reset all blocks to AIR
+    for (int r = 0; r < height; r++) {
+        for (int c = 0; c < width; c++) {
+            blocks[r][c].init(c, r, BlockType::AIR, nullptr);
         }
     }
 
-    // Ground row at row 15 (out of 20)
-    for (int c = 0; c < width; c++)
-    {
-        blocks[15][c].type = BlockType::GRASS;
-        blocks[15][c].isDestructible = true;
+    // 2. SEGMENTED PLATFORM GENERATION
+    for (int c = 0; c < width; c++) {
+        bool isGap = (c % 5 == 0 || c % 5 == 4); 
+        
+        if (!isGap) {
+            // Main ground: snap to exactly row 15 with slight variance
+            int surfaceY = 15;
+            if (c % 10 > 7) surfaceY = 14; // step up
 
-        // Stone below ground
-        for (int r = 16; r < height - 1; r++)
-        {
-            blocks[r][c].type = BlockType::STONE;
-            blocks[r][c].isDestructible = true;
+            blocks[surfaceY][c].init(c, surfaceY, BlockType::GRASS, &grassTex);
+            
+            // SINGLE BLOCK SUSPENDED PLATFORMS (Floating in air)
+            if (c % 12 > 4 && c % 12 < 8) {
+                int highY = 8;
+                blocks[highY][c].init(c, highY, BlockType::STONE, &stoneTex);
+            }
         }
-        // Indestructible bedrock at bottom row
-        blocks[height-1][c].type = BlockType::INDESTRUCTIBLE;
-        blocks[height-1][c].isIndestructible = true;
+
+        // Bedrock safety line (bottom of screen)
+        blocks[height-1][c].init(c, height-1, BlockType::INDESTRUCTIBLE, &stoneTex);
     }
 
-    // A few platforms at different heights
-    for (int c = 20; c < 30; c++) blocks[11][c].type = BlockType::STONE;
-    for (int c = 40; c < 50; c++) blocks[9][c].type  = BlockType::STONE;
-    for (int c = 60; c < 70; c++) blocks[12][c].type = BlockType::STONE;
-
-    // Load tile textures
-    grassTex.loadFromFile("Sprites/blocks/grass_block_side.png");
-    stoneTex.loadFromFile("Sprites/blocks/stone.png");
-
-    // Assign textures to blocks based on type
-    for (int r = 0; r < height; r++)
-        for (int c = 0; c < width; c++)
-        {
-            switch (blocks[r][c].type)
-            {
-                case BlockType::GRASS:
-                    blocks[r][c].init(c, r, BlockType::GRASS, &grassTex);
-                    break;
-                case BlockType::STONE:
-                    blocks[r][c].init(c, r, BlockType::STONE, &stoneTex);
-                    break;
-                case BlockType::INDESTRUCTIBLE:
-                    blocks[r][c].init(c, r, BlockType::INDESTRUCTIBLE, &stoneTex);
-                    break;
-                default: 
-                    blocks[r][c].init(c, r, BlockType::AIR, nullptr);
-                    break;
-            }
-            // Note: init() already sets the sprite texture. 
-            // We ensure scaling matches CELL_SIZE if needed.
-        }
+    // Spawn platform
+    blocks[15][2].init(2, 15, BlockType::GRASS, &grassTex);
 }
 
 void Level::update(float dt, ScoreManager& score)
 {
 	(void)score;
 	if (playerPtr) {
-		// Pass interact key state and camera offset (0 for mock)
 		entityManager.update(dt, playerPtr, false, 0.0f);
 		entityManager.cleanupInactive();
 	}
@@ -115,7 +77,6 @@ void Level::draw(sf::RenderWindow& w, Camera& cam)
 	float camOX = cam.getOffsetX();
 	float camOY = cam.getOffsetY();
 
-	// Draw Culling logic
 	int startCol = (int)(camOX / cellSize) - 1;
 	int endCol   = startCol + (SCREEN_W / cellSize) + 2;
 
@@ -128,7 +89,6 @@ void Level::draw(sf::RenderWindow& w, Camera& cam)
 		}
 	}
 
-	// Entities
 	Enemy** enemies = entityManager.getEnemies();
 	for (int i = 0; i < entityManager.getEnemyCount(); ++i) {
 		enemies[i]->draw(w, camOX, camOY);
@@ -148,25 +108,9 @@ Block* Level::getBlock(int x, int y) {
 	return nullptr;
 }
 
-void Level::destroyBlock(int x, int y, int radius) {
-	for (int i = y - radius; i <= y + radius; ++i) {
-		for (int j = x - radius; j <= x + radius; ++j) {
-			Block* b = getBlock(j, i);
-			if (b) b->destroy();
-		}
-	}
-}
-
-void Level::setPlayerPtr(Soldier* p) { playerPtr = p; }
-
-EntityManager& Level::getEntityManager() { return entityManager; }
-
 const char** Level::getTileGrid() {
-	// Re-purposing Level grid for char** representation if needed.
-	// Since blocks is Block**, we can't directly return it as const char**.
-	// We will use a static char grid for this specific UML request context.
-	static char* rawGrid[LEVEL_HEIGHT];
-	static char actualData[LEVEL_HEIGHT][LEVEL_WIDTH];
+	static char* rawGrid[20];
+	static char actualData[20][200];
 	for (int y = 0; y < height; ++y) {
 		for (int x = 0; x < width; ++x) {
 			actualData[y][x] = (blocks[y][x].type == BlockType::AIR) ? ' ' : '#';
@@ -175,6 +119,9 @@ const char** Level::getTileGrid() {
 	}
 	return (const char**)rawGrid;
 }
+
+void Level::setPlayerPtr(Soldier* p) { playerPtr = p; }
+EntityManager& Level::getEntityManager() { return entityManager; }
 int Level::getWidth() const { return width; }
 int Level::getHeight() const { return height; }
 int Level::getCellSize() const { return cellSize; }

@@ -1,3 +1,6 @@
+///I AM AANIS AHAHAHAHAHAHHAHAIUHE@SUIEHUEH
+
+
 #include "../headers/Game.h"
 #include "../headers/MenuState.h"
 #include "../headers/PlayState.h"
@@ -24,19 +27,23 @@ void Game::run()
 	characters[2] = new PlayerEri();
 	characters[3] = new PlayerFio();
 
-	for(int i=0; i<4; i++) characters[i]->loadTexture(""); 
-
 	hud.init();
 
-	// Load Sounds
-	soundManager.load("shoot", "Audio/shoot.wav");
-	soundManager.load("explosion", "Audio/explosion.wav");
-	soundManager.load("enemy_die", "Audio/enemy_die.wav");
-	soundManager.load("player_hit", "Audio/player_hit.wav");
-	soundManager.load("jump", "Audio/jump.wav");
-	soundManager.load("pickup", "Audio/pickup.wav");
+	// Load Sound Effects
+	soundManager.load("shoot_pistol", "Audio/shoot_pistol.wav");
+	soundManager.load("shoot_hmg",    "Audio/shoot_hmg.wav");
+	soundManager.load("shoot_rocket", "Audio/shoot_rocket.wav");
+	soundManager.load("shoot_flame",  "Audio/shoot_flame.wav");
+	soundManager.load("shoot_laser",  "Audio/shoot_laser.wav");
+	soundManager.load("explosion",    "Audio/explosion.wav");
+	soundManager.load("enemy_die",    "Audio/enemy_die.wav");
+	soundManager.load("player_hit",   "Audio/player_hurt.wav"); // Renamed player_hurt.wav to player_hit ID
+	soundManager.load("boss_hit",     "Audio/boss_hit.wav");
+	soundManager.load("jump",         "Audio/jump.wav");
+	soundManager.load("pickup",       "Audio/pickup.wav");
+	soundManager.load("game_end",     "Audio/game_end.wav");
 
-	stateManager.registerState(new MenuState(&stateManager));
+	stateManager.registerState(new MenuState(&stateManager, &soundManager));
 	stateManager.registerState(new PlayState(&level, characters, &camera, &hud, &scoreManager, &soundManager, &stateManager));
 	stateManager.registerState(new PauseState());
 	stateManager.registerState(new SelfPlayState(&level, &camera, &hud, &scoreManager));

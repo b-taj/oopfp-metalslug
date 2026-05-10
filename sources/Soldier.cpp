@@ -3,12 +3,13 @@
 #include "../headers/Projectile.h"
 #include "../headers/BallisticProjectile.h"
 #include "../headers/Constants.h"
+#include "../headers/ConcreteWeapons.h"
 #include <iostream>
 #include <cmath>
 
 Soldier::Soldier()
-	: speedX(200.0f), speedY(JUMP_FORCE), velocityX(0.0f), velocityY(0.0f), speedMult(1.0f),
-	  accel(1800.0f), friction(2400.0f), maxSpeedX(280.0f),
+	: speedX(450.0f), speedY(JUMP_FORCE), velocityX(0.0f), velocityY(0.0f), speedMult(1.0f),
+	  accel(2500.0f), friction(3000.0f), maxSpeedX(450.0f),
 	  onGround(false), facingRight(true), jumpWasPressed(false), knifeOnly(false), 
 	  lives(2), grenadeCount(10), currentWeapon(nullptr), soundManager(nullptr)
 {
@@ -19,6 +20,9 @@ Soldier::Soldier()
 	maxHp = 100;
 	damageLevel = 0;
 	
+	pistol = new Pistol();
+	currentWeapon = pistol;
+
 	currentTransform = new NormalState();
 }
 
@@ -41,28 +45,19 @@ void Soldier::update(float dt)
 	x += velocityX * dt;
 	y += velocityY * dt;
 
-	// ANIMATION TRANSITION RULES
-	if (!animator.isFinished() && !animator.getCurrentAnimationLoops()) 
-		goto apply_anim;
-
-	if (hp <= 0) { animator.play("die"); goto apply_anim; }
-	if (!onGround) { animator.play("jump"); goto apply_anim; }
-	if (std::abs(velocityX) > 1.0f) { animator.play("walk"); goto apply_anim; }
-	animator.play("idle");
-
-apply_anim:
-	animator.update(dt);
-	animator.applyToSprite(sprite);
+    // TEMPORARY: Disabled animator to use static character.png placeholder
+	// animator.update(dt);
+	// animator.applyToSprite(sprite);
 }
 
 void Soldier::draw(sf::RenderWindow& window, float camOffsetX, float camOffsetY)
 {
 	if (!active) return;
-	sprite.setPosition(x - camOffsetX, y - camOffsetY);
+	// Position at the bottom-center of the collider
+	sprite.setPosition(x + width / 2.0f - camOffsetX, y + height - camOffsetY);
 	
-	float sx = facingRight ? animator.getScaleX() : -animator.getScaleX();
-	sprite.setScale(sx, animator.getScaleY());
-	animator.applyToSprite(sprite);
+	float sx = facingRight ? std::abs(sprite.getScale().x) : -std::abs(sprite.getScale().x);
+	sprite.setScale(sx, std::abs(sprite.getScale().y));
 
 	window.draw(sprite);
 }
@@ -82,19 +77,19 @@ void Soldier::die()
 
 void Soldier::loadTexture(const char* path)
 {
-    if (path == nullptr || path[0] == '\0') return;
-    if (!texture.loadFromFile(path))
+    // FORCE PLACEHOLDER
+    if (!texture.loadFromFile("Sprites/Character.png"))
     {
-        // Fallback: leave texture blank — sprite will render as white rectangle
-        // This is intentional: missing texture should not crash the build
         return;
     }
     sprite.setTexture(texture);
-    // Default texture rect covers full image
-    sprite.setTextureRect(sf::IntRect(
-        0, 0,
-        (int)texture.getSize().x,
-        (int)texture.getSize().y));
+    sprite.setScale(0.25f, 0.25f);
+    
+    // Set origin to bottom-center of the texture
+    sf::Vector2u size = texture.getSize();
+    sprite.setOrigin((float)size.x / 2.0f, (float)size.y);
+
+    sprite.setTextureRect(sf::IntRect(0, 0, (int)size.x, (int)size.y));
 }
 
 void Soldier::setTransformationState(TransformationState* next)
@@ -129,15 +124,19 @@ void Soldier::setSpeed(float spd, float jumpForce) { speedX = spd; speedY = jump
 int Soldier::getLives() const { return lives; }
 int Soldier::getGrenadeCount() const { return grenadeCount; }
 int Soldier::getHp() const { return hp; }
+int Soldier::getAmmo() const { return currentWeapon ? currentWeapon->getAmmo() : 0; }
 
-void Soldier::resolveGround(char** grid, int h, int w, int cell)
+void Soldier::resolveGround(const char** grid, int h, int w, int cell)
 {
 	onGround = false;
+    // Check floor directly beneath feet
 	int tileY = static_cast<int>(y + height) / cell;
 	int tileX = static_cast<int>(x + width/2.0f) / cell;
+
 	if (tileY >= 0 && tileY < h && tileX >= 0 && tileX < w) {
 		if (grid[tileY][tileX] != ' ') {
-			if (velocityY > 0.0f) {
+			if (velocityY >= 0.0f) {
+                // ALIGN TO TOP: set y so that (y + height) is exactly at the tile boundary
 				y = (float)(tileY * cell - height);
 				velocityY = 0.0f;
 				onGround = true;
@@ -150,7 +149,6 @@ Projectile* Soldier::shoot(float angle)
 {
 	if (knifeOnly) return nullptr;
 	if (currentWeapon && currentWeapon->canFire()) {
-		animator.play("shoot"); // Trigger animation
 		return currentWeapon->fire(x, y, angle, soundManager);
 	}
 	return nullptr;

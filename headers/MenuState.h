@@ -2,8 +2,11 @@
 #include "GameState.h"
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/Text.hpp>
+#include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/Texture.hpp>
 
 class GameStateManager;
+class SoundManager;
 
 /**
  * MenuState.h -- Main menu for mode selection.
@@ -12,7 +15,7 @@ class GameStateManager;
 class MenuState : public GameState
 {
 public:
-	MenuState(GameStateManager* gsm);
+	MenuState(GameStateManager* gsm, SoundManager* sm);
 	void		onEnter() override;
 	void		handleEvents(sf::RenderWindow& window, sf::Event& event) override;
 	void		update(float dt) override;
@@ -25,4 +28,8 @@ private:
 	sf::Text			title;
 	sf::Text			options[3];
 	GameStateManager*	stateManager;
+	SoundManager*		soundManager;
+
+	sf::Texture			bgTexture;
+	sf::Sprite			bgSprite;
 };
