@@ -7,6 +7,8 @@
 #include "PlayerSoldier.h"
 #include "SoundManager.h"
 #include "Timeline.h"
+#include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/Sprite.hpp>
 
 class GameStateManager;
 
@@ -38,9 +40,15 @@ private:
 	GameStateManager* stateManager;
 	Timeline		timeline;
 
+	sf::Texture		jungleBgTex, aerialBgTex, aquaticBgTex;
+	sf::Sprite		bgSprite;
+
 	int				activeCharIdx;
 	float			zPressTimer;
 	bool			zWasPressed;
+	bool			isPaused;
+	sf::Font		pauseFont;
+	sf::Text		pauseText;
 	float			elapsedTime;
 	float			bossTransitionFlash;
 };

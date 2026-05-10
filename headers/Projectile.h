@@ -9,6 +9,8 @@
  * Inherits from Entity.
  */
 
+#include <SFML/Graphics/RectangleShape.hpp>
+
 class Projectile : public Entity
 {
 public:
@@ -21,8 +23,7 @@ public:
 	bool			isFromPlayer() const;
 	void			loadTexture(const char* path);
 
-	// Public access for collision checks
-	bool			isEnemyProjectile; // Mapping fromPlayer to this for existing logic
+	bool			isEnemyProjectile; 
 	int				damage;
 
 protected:
@@ -33,6 +34,5 @@ protected:
 	bool			fromPlayer;
 	ProjectileType	projType;
 
-	sf::Sprite		sprite;
-	sf::Texture		texture;
+	sf::RectangleShape rectShape;
 };
