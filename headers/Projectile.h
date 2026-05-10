@@ -1,34 +1,38 @@
 #pragma once
-#include <SFML/Graphics.hpp>
+#include "Entity.h"
 #include "Enums.h"
+#include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/Texture.hpp>
 
-// Projectile.h -- A single in-flight projectile produced by Weapon::fire()
-// or spawned by a Grenade::explode(). Removed from the active list when isAlive=false.
+/**
+ * Projectile.h -- Abstract base for all in-flight combat objects.
+ * Inherits from Entity.
+ */
 
-class Projectile
+class Projectile : public Entity
 {
 public:
-	// Advance position; deactivate if boundary is reached.
-	void			update(float dt);
+	virtual ~Projectile() = default;
 
-	void			draw(sf::RenderWindow& window);
+	virtual void	update(float dt) = 0;
+	void			draw(sf::RenderWindow& window, float camOX, float camOY) override;
 
-	// Called by collision detection when this projectile hits a target.
-	void			onHit();
-	void			loadTexture(const char* filename);
-	void			setTextureRect(int left, int top, int width, int height);
-	void			setPosition(float nx, float ny);
+	int				getDamage() const;
+	bool			isFromPlayer() const;
+	void			loadTexture(const char* path);
 
-	// ── data ─────────────────────────────────────────────────────────────
-	float			x;
-	float			y;
-	float			velX;			// pixels per second
-	float			velY;
-	int			damage;
-	ProjectileType	type;
-	bool			isAlive;
+	// Public access for collision checks
+	bool			isEnemyProjectile; // Mapping fromPlayer to this for existing logic
+	int				damage;
 
-private:
+protected:
+	Projectile();
+
+	float			velocityX;
+	float			velocityY;
+	bool			fromPlayer;
+	ProjectileType	projType;
+
 	sf::Sprite		sprite;
 	sf::Texture		texture;
 };

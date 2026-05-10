@@ -1,29 +1,26 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 
-// Camera.h -- 2-D scrolling camera. Tracks the active player and clamps
-// the viewport to world boundaries. Supports both horizontal and vertical scroll.
+/**
+ * Camera.h -- 2-D scrolling camera.
+ * Tracks the player with lerp smoothing and supports screen shake effects.
+ */
 
 class Camera
 {
 public:
-	// Smoothly move viewport toward (playerX, playerY) this frame.
-	void	update(float playerX, float playerY);
+	Camera();
 
-	// Apply current offset to the SFML view before drawing.
-	void	apply(sf::RenderWindow& window);
+	void	update(float playerX, float playerY, float dt);
+	void	shake(float magnitude, float duration);
 
-	// Convert world coordinates to screen coordinates using current offset.
-	void	worldToScreen(float x, float y, float& outX, float& outY);
-
-	float	getOffsetX();
-	float	getOffsetY();
+	float	getOffsetX() const;
+	float	getOffsetY() const;
 
 private:
-	float	offsetX;		// current horizontal scroll
-	float	offsetY;		// current vertical scroll
-	float	targetX;		// desired target (lerped toward)
-	float	targetY;
-	int		worldWidth;
-	int		worldHeight;
+	float	offsetX;
+	float	offsetY;
+
+	float	shakeTimer;
+	float	shakeMagnitude;
 };

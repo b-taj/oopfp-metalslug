@@ -22,7 +22,7 @@
     <VCProjectVersion>18.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{3528e980-94b5-40bf-a85d-5d1390130774}</ProjectGuid>
-    <RootNamespace>oopfpmetalslugvs</RootNamespace>
+    <RootNamespace>oopfpmetalslug_vs</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -77,10 +77,13 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(ProjectDir)lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sfml-graphics-d.lib;sfml-window-d.lib;sfml-system-d.lib;sfml-audio-d.lib;sfml-network-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -92,10 +95,15 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(ProjectDir)lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sfml-graphics.lib;sfml-window.lib;sfml-system.lib;sfml-audio.lib;sfml-network.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -105,13 +113,13 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>sfml-graphics-d.lib;sfml-window-d.lib;sfml-system-d.lib;sfml-audio-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sfml-graphics-d.lib;sfml-window-d.lib;sfml-system-d.lib;sfml-audio-d.lib;sfml-network-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -123,17 +131,135 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>sfml-graphics.lib;sfml-window.lib;sfml-system.lib;sfml-audio.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(ProjectDir)lib;%(AdditionalLibraryDirectories) </AdditionalLibraryDirectories>
+      <AdditionalDependencies>sfml-graphics.lib;sfml-window.lib;sfml-system.lib;sfml-audio.lib;sfml-network.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="sources\AttackState.cpp" />
+    <ClCompile Include="sources\BallisticProjectile.cpp" />
+    <ClCompile Include="sources\BehaviorChain.cpp" />
+    <ClCompile Include="sources\Biome.cpp" />
+    <ClCompile Include="sources\Block.cpp" />
+    <ClCompile Include="sources\Bosses.cpp" />
+    <ClCompile Include="sources\Camera.cpp" />
+    <ClCompile Include="sources\Collectible.cpp" />
+    <ClCompile Include="sources\DamagableEntity.cpp" />
+    <ClCompile Include="sources\Enemy.cpp" />
+    <ClCompile Include="sources\Entity.cpp" />
+    <ClCompile Include="sources\EntityManager.cpp" />
+    <ClCompile Include="sources\FractalNoise.cpp" />
+    <ClCompile Include="sources\Game.cpp" />
+    <ClCompile Include="sources\GameStateManager.cpp" />
+    <ClCompile Include="sources\Genome.cpp" />
+    <ClCompile Include="sources\HUD.cpp" />
+    <ClCompile Include="sources\InteractableObject.cpp" />
+    <ClCompile Include="sources\Level.cpp" />
+    <ClCompile Include="sources\MenuState.cpp" />
+    <ClCompile Include="sources\MummyState.cpp" />
+    <ClCompile Include="sources\NEATManager.cpp" />
+    <ClCompile Include="sources\NeuralNetwork.cpp" />
+    <ClCompile Include="sources\NormalState.cpp" />
+    <ClCompile Include="sources\PatrolState.cpp" />
+    <ClCompile Include="sources\PauseState.cpp" />
+    <ClCompile Include="sources\PerlinNoise.cpp" />
+    <ClCompile Include="sources\PlayerSoldier.cpp" />
+    <ClCompile Include="sources\PlayState.cpp" />
+    <ClCompile Include="sources\Projectile.cpp" />
+    <ClCompile Include="sources\ProjectileWeapon.cpp" />
+    <ClCompile Include="sources\ReflexFingerprint.cpp" />
+    <ClCompile Include="sources\ScoreManager.cpp" />
+    <ClCompile Include="sources\SelfPlayState.cpp" />
+    <ClCompile Include="sources\Soldier.cpp" />
+    <ClCompile Include="sources\SoundManager.cpp" />
+    <ClCompile Include="sources\SpecialFeatures.cpp" />
+    <ClCompile Include="sources\Species.cpp" />
+    <ClCompile Include="sources\SpriteAnimator.cpp" />
+    <ClCompile Include="sources\StraightProjectile.cpp" />
+    <ClCompile Include="sources\TerrainGenerator.cpp" />
+    <ClCompile Include="sources\Timeline.cpp" />
+    <ClCompile Include="sources\UndeadState.cpp" />
+    <ClCompile Include="sources\Vehicle.cpp" />
+    <ClCompile Include="sources\Weapon.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="headers\AttackState.h" />
+    <ClInclude Include="headers\BallisticProjectile.h" />
+    <ClInclude Include="headers\BehaviorChain.h" />
+    <ClInclude Include="headers\Biome.h" />
+    <ClInclude Include="headers\Block.h" />
+    <ClInclude Include="headers\Boss.h" />
+    <ClInclude Include="headers\Bosses.h" />
+    <ClInclude Include="headers\Camera.h" />
+    <ClInclude Include="headers\Collectible.h" />
+    <ClInclude Include="headers\ConcreteVehicles.h" />
+    <ClInclude Include="headers\ConcreteWeapons.h" />
+    <ClInclude Include="headers\ConnectionGene.h" />
+    <ClInclude Include="headers\Constants.h" />
+    <ClInclude Include="headers\DamagableEntity.h" />
+    <ClInclude Include="headers\DeadAIState.h" />
+    <ClInclude Include="headers\Enemy.h" />
+    <ClInclude Include="headers\EnemyAIState.h" />
+    <ClInclude Include="headers\Entity.h" />
+    <ClInclude Include="headers\EntityManager.h" />
+    <ClInclude Include="headers\Enums.h" />
+    <ClInclude Include="headers\FractalNoise.h" />
+    <ClInclude Include="headers\Game.h" />
+    <ClInclude Include="headers\GameMode.h" />
+    <ClInclude Include="headers\GameState.h" />
+    <ClInclude Include="headers\GameStateManager.h" />
+    <ClInclude Include="headers\GameState_Snapshot.h" />
+    <ClInclude Include="headers\Genome.h" />
+    <ClInclude Include="headers\GhostPlayer.h" />
+    <ClInclude Include="headers\GrudgeState.h" />
+    <ClInclude Include="headers\HUD.h" />
+    <ClInclude Include="headers\HairbusterRiberts.h" />
+    <ClInclude Include="headers\InfantryEnemies.h" />
+    <ClInclude Include="headers\InteractableObject.h" />
+    <ClInclude Include="headers\IronNokana.h" />
+    <ClInclude Include="headers\Level.h" />
+    <ClInclude Include="headers\LevelProfileFactory.h" />
+    <ClInclude Include="headers\MenuState.h" />
+    <ClInclude Include="headers\MummyState.h" />
+    <ClInclude Include="headers\NEATManager.h" />
+    <ClInclude Include="headers\NeuralNetwork.h" />
+    <ClInclude Include="headers\NodeGene.h" />
+    <ClInclude Include="headers\NormalState.h" />
+    <ClInclude Include="headers\PatrolState.h" />
+    <ClInclude Include="headers\PauseState.h" />
+    <ClInclude Include="headers\PerlinNoise.h" />
+    <ClInclude Include="headers\PlayState.h" />
+    <ClInclude Include="headers\PlayerSoldier.h" />
+    <ClInclude Include="headers\Players.h" />
+    <ClInclude Include="headers\Projectile.h" />
+    <ClInclude Include="headers\ProjectileWeapon.h" />
+    <ClInclude Include="headers\ReflexFingerprint.h" />
+    <ClInclude Include="headers\ScoreManager.h" />
+    <ClInclude Include="headers\SeaSatan.h" />
+    <ClInclude Include="headers\SelfPlayState.h" />
+    <ClInclude Include="headers\Soldier.h" />
+    <ClInclude Include="headers\SoundManager.h" />
+    <ClInclude Include="headers\Species.h" />
+    <ClInclude Include="headers\SpriteAnimator.h" />
+    <ClInclude Include="headers\StraightProjectile.h" />
+    <ClInclude Include="headers\TerrainGenerator.h" />
+    <ClInclude Include="headers\Timeline.h" />
+    <ClInclude Include="headers\TimelineNode.h" />
+    <ClInclude Include="headers\TransformationState.h" />
+    <ClInclude Include="headers\UltimateBoss.h" />
+    <ClInclude Include="headers\UndeadState.h" />
+    <ClInclude Include="headers\Vehicle.h" />
+    <ClInclude Include="headers\VehicleBranches.h" />
+    <ClInclude Include="headers\Weapon.h" />
+    <ClInclude Include="headers\WorldItems.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

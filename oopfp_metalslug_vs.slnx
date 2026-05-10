@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="oopfp_metalslug_vs.vcxproj" />
+  <Project Path="oopfp_metalslug_vs.vcxproj" Id="3528e980-94b5-40bf-a85d-5d1390130774" />
 </Solution>

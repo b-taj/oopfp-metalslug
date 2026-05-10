@@ -1,39 +1,47 @@
 #include "../headers/Camera.h"
+#include "../headers/Constants.h"
+#include <cmath>
+#include <cstdlib>
 
-void Camera::update(float playerX, float playerY)
+Camera::Camera() : offsetX(0.0f), offsetY(0.0f), shakeTimer(0.0f), shakeMagnitude(0.0f)
 {
-    // targetX and targetY aren't strictly needed for basic follow, 
-    // but we can use them for smooth lerping later.
-    targetX = playerX;
-    targetY = playerY;
-
-    // Keep player centered after they pass the middle of the screen (800px)
-    if (playerX > 800.0f) {
-        offsetX = playerX - 800.0f;
-    } else {
-        offsetX = 0.0f;
-    }
-
-    // Vertical scroll (optional, keeping at 0 for now unless player goes very high)
-    if (playerY < 300.0f) {
-        offsetY = playerY - 300.0f;
-    } else {
-        offsetY = 0.0f;
-    }
 }
 
-void Camera::apply(sf::RenderWindow& window)
+void Camera::update(float playerX, float playerY, float dt)
 {
-    // Since sf::View is not allowed, this method is a stub.
-    // Coordinate translation happens manually via getOffsetX().
-    (void)window;
+	float targetX = playerX - SCREEN_W * 0.5f;
+	float targetY = playerY - SCREEN_H * 0.5f;
+	float speed   = 8.0f;
+
+	offsetX += (targetX - offsetX) * speed * dt;
+	offsetY += (targetY - offsetY) * speed * dt;
+
+	float maxOffsetX = (float)(LEVEL_WIDTH  * CELL_SIZE) - SCREEN_W;
+	float maxOffsetY = (float)(LEVEL_HEIGHT * CELL_SIZE) - SCREEN_H;
+
+	if (offsetX < 0.0f) offsetX = 0.0f;
+	if (offsetY < 0.0f) offsetY = 0.0f;
+	if (offsetX > maxOffsetX) offsetX = maxOffsetX;
+	if (offsetY > maxOffsetY) offsetY = maxOffsetY;
+
+	if (maxOffsetX < 0.0f) offsetX = 0.0f;
+	if (maxOffsetY < 0.0f) offsetY = 0.0f;
+
+	// SCREEN SHAKE
+	if (shakeTimer > 0.0f) {
+		float angle = (float)(std::rand() % 628) * 0.01f;
+		offsetX += std::cos(angle) * shakeMagnitude;
+		offsetY += std::sin(angle) * shakeMagnitude;
+		shakeTimer -= dt;
+		shakeMagnitude *= 0.85f;
+	}
 }
 
-void Camera::worldToScreen(float worldX, float worldY, float& outX, float& outY)
+void Camera::shake(float magnitude, float duration)
 {
-    outX = worldX - offsetX;
-    outY = worldY - offsetY;
+	shakeMagnitude = magnitude;
+	shakeTimer = duration;
 }
 
-float Camera::getOffsetX() { return offsetX; }
-float Camera::getOffsetY() { return offsetY; }
+float Camera::getOffsetX() const { return offsetX; }
+float Camera::getOffsetY() const { return offsetY; }

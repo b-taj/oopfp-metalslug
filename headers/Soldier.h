@@ -1,0 +1,85 @@
+#pragma once
+#include "DamagableEntity.h"
+#include "TransformationState.h"
+#include "Weapon.h"
+#include "SpriteAnimator.h"
+#include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/Texture.hpp>
+
+/**
+ * Soldier.h -- Base class for all humanoid units (Players and NPCs).
+ * Inherits from DamagableEntity. Owns its transformation state and weapons.
+ */
+
+class Soldier : public DamagableEntity
+{
+public:
+	virtual ~Soldier();
+
+	virtual void	activateSpecialPower() = 0;
+	virtual float	getFireRate() const = 0;
+	virtual const char* getName() const = 0;
+
+	void			update(float dt) override;
+	void			draw(sf::RenderWindow& window, float camOffsetX, float camOffsetY) override;
+
+	void			takeDamage(int dmg) override;
+	void			die() override;
+
+	void			setTransformationState(TransformationState* next);
+	void			forceKnifeOnly(bool f);
+	void			resolveGround(char** grid, int h, int w, int cell);
+	
+	class Projectile* shoot(float angle);
+	
+	void			loadTexture(const char* path);
+	void			setSpriteScale(float sx, float sy);
+	void			setSpeed(float spd, float jumpForce);
+	void			setSoundManager(class SoundManager* sm);
+
+	float			getVelocityX() const;
+	float			getVelocityY() const;
+	bool			isOnGround() const;
+
+	void			moveLeft(float dt);
+	void			moveRight(float dt);
+	void			jump();
+	class Projectile* throwGrenade(float angle);
+
+	int				getLives() const;
+	int				getGrenadeCount() const;
+	int				getHp() const;
+
+	// Movement utility for states
+	void			setSpeedMultiplier(float m);
+
+protected:
+	Soldier();
+
+	SpriteAnimator	animator; // Direct member
+	sf::Texture		texture;
+	sf::Sprite		sprite;
+
+	float			speedX;			// Base move speed
+	float			speedY;			// Jump force
+	float			velocityX;
+	float			velocityY;
+	float			speedMult;		// Applied by states
+
+	float			accel;			// horizontal acceleration
+	float			friction;		// horizontal deceleration
+	float			maxSpeedX;		// cap
+
+	bool			onGround;
+	bool			facingRight;
+	bool			jumpWasPressed;
+	bool			knifeOnly;
+
+	int				lives;
+	int				grenadeCount;
+
+	TransformationState* currentTransform;	// OWNED
+	Weapon*			currentWeapon;			// OWNED (Composition)
+	class Pistol*	pistol;					// OWNED (Fallback)
+	class SoundManager* soundManager;		// AGGREGATED
+};

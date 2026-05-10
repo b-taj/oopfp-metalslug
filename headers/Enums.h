@@ -1,85 +1,105 @@
 #pragma once
-// Enums.h -- All project-wide enumerations shared across the class hierarchy.
 
-// Injury / transformation state of a playable character.
-enum class CharacterState
-{
-	NORMAL,
-	INJURED,
-	CRITICAL,
-	UNDEAD,       // -50% walk speed for 10 s
-	MUMMY,        // knife-only for 10 s
-	DEAD
+/**
+ * Enums.h -- Project-wide enumerations for state management and type identification.
+ * Follows a library-free approach.
+ */
+
+enum class CharacterState 
+{ 
+    NORMAL, 
+    INJURED, 
+    CRITICAL, 
+    UNDEAD, 
+    MUMMY, 
+    DEAD 
 };
 
-// Tile types used in the 64x64 block grid.
-enum class BlockType
-{
-	GRASS,
-	STONE,
-	WATER,
-	DIRT,
-	INDESTRUCTIBLE,  // permanent bottom row
-	AIR
+enum class EnemyAIMode 
+{ 
+    PATROL, 
+    ATTACK, 
+    GRUDGE, 
+    DEAD 
 };
 
-// Distinguishes projectile behaviour on impact.
-enum class ProjectileType
-{
-	BULLET,
-	ROCKET,
-	FLAME_STREAM,
-	LASER_BEAM,
-	ENERGY_BEAM,
-	CANNONBALL
+enum class ProjectileType 
+{ 
+    STRAIGHT, 
+    BALLISTIC 
 };
 
-// Active phase for UltimateBoss polymorphic dispatch.
-enum class BossPhase
-{
-	GROUND,
-	AERIAL,
-	AQUATIC
+enum class WeaponType 
+{ 
+    PISTOL, 
+    HMG, 
+    ROCKET_LAUNCHER, 
+    FLAME_SHOT, 
+    LASER_GUN, 
+    KNIFE 
 };
 
-// Active form of the AmphibiousSlug vehicle.
-enum class VehicleForm
-{
-	GROUND_SLUG,
-	FLYER,
-	MARINER
+enum class VehicleForm 
+{ 
+    GROUND, 
+    AERIAL, 
+    AQUATIC 
 };
 
-// Role of a neuron node inside a NEAT genome.
+enum class BossPhase 
+{ 
+    GROUND, 
+    AERIAL, 
+    AQUATIC, 
+    ULTIMATE 
+};
+
+enum class GameStateID 
+{ 
+    MENU, 
+    PLAY, 
+    PAUSE, 
+    GAME_OVER, 
+    SELF_PLAY 
+};
+
+enum class BiomeType 
+{ 
+    AERIAL, 
+    PLAINS, 
+    AQUATIC 
+};
+
+enum class CollectibleType 
+{ 
+    FOOD_TURKEY, 
+    FOOD_FRUIT, 
+    POW_PRISONER, 
+    SUPPLY_CRATE 
+};
+
+enum class BlockType 
+{ 
+    AIR, 
+    GRASS, 
+    STONE, 
+    WATER, 
+    INDESTRUCTIBLE 
+};
+
 enum class NodeType
 {
-	INPUT,
-	HIDDEN,
-	OUTPUT,
-	BIAS
+    INPUT,
+    HIDDEN,
+    OUTPUT,
+    BIAS
 };
 
-// Abstract behavioural states used by BehaviorChain (Chains of Death).
 enum class BehaviorState
 {
-	PRESSING,
-	CONSOLIDATING,
-	RETREATING,
-	BURNING_RESOURCES,
-	STALLING
-};
-
-// Direction of a SlugMariner missile salvo.
-enum class MissileType
-{
-	HORIZONTAL,
-	VERTICAL,
-	REVERSE
-};
-
-// Food collectible sub-type controlling saturation restored.
-enum class FoodType
-{
-	TURKEY,   // restores 3 saturation units
-	FRUIT     // restores 2 saturation units
+    IDLE,
+    RETREATING,
+    PRESSING,
+    CONSOLIDATING,
+    STALLING
 };

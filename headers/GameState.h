@@ -1,23 +1,25 @@
 #pragma once
-
 #include "Enums.h"
+#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Window/Event.hpp>
 
-// GameState.h -- Plain-data snapshot of the world at one frame.
-// Used by Timeline (rewind), DeathFingerprint (death pattern matching),
-// and SelfPlayingMode (NEAT fitness evaluation).
+/**
+ * GameState.h -- Abstract base for the State Pattern.
+ * Replaces monolithic branches in the game loop.
+ */
 
-struct GameState
+class GameState
 {
-	float					charX;			// player world-X
-	float					charY;			// player world-Y
-	int					charHp;			// current hit-points
-	CharacterState			charState;		// injury / transform state
-	std::string				weaponType;		// active weapon identifier
-	int					ammo;			// remaining ammo
-	int					grenadeCount;
-	std::vector<std::pair<float,float>>	enemyPositions; // (x,y) of all live enemies
-	float					timestamp;		// seconds since level start
+public:
+	virtual ~GameState() = default;
 
-	std::string	serialize();
-	void		deserialize(const std::string& data);
+	virtual void		onEnter() = 0;
+	virtual void		handleEvents(sf::RenderWindow& window, sf::Event& event) = 0;
+	virtual void		update(float dt) = 0;
+	virtual void		render(sf::RenderWindow& window) = 0;
+	virtual void		onExit() = 0;
+	virtual GameStateID	getID() const = 0;
+
+	virtual const char* serialize() const { return ""; }
+	virtual void deserialize(const char* data) { (void)data; }
 };

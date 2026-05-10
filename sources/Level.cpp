@@ -1,130 +1,180 @@
 #include "../headers/Level.h"
 #include "../headers/Camera.h"
+#include "../headers/ScoreManager.h"
+#include "../headers/Constants.h"
 
-Level::Level()
+Level::Level() 
+	: width(LEVEL_WIDTH), height(LEVEL_HEIGHT), cellSize(CELL_SIZE), 
+	  playerPtr(nullptr), seaLevel(16), isRaining(false), rainTimer(0.0f)
 {
-	cellSize = 64;
-	height = 14;
-	width = 110;
-	grid = new char*[height];
-	for (int i = 0; i < height; ++i) grid[i] = new char[width];
+	blocks = new Block*[height];
+	for (int i = 0; i < height; ++i) {
+		blocks[i] = new Block[width];
+	}
 
-	blackTex.loadFromFile("Sprites/blocks/stone.png");
-	whiteTex.loadFromFile("Sprites/blocks/grass_block_side.png");
-	blackSprite.setTexture(blackTex);
-	whiteSprite.setTexture(whiteTex);
+	stoneTex.loadFromFile("Sprites/blocks/stone.png");
 
-	enemyCount = 0;
-	for (int i = 0; i < 64; i++) enemies[i] = nullptr;
-	projectileCount = 0;
-	for (int i = 0; i < 512; i++) projectiles[i] = nullptr;
+	biomes[0] = new AerialBiome(0, 50);
+	biomes[1] = new PlainsBiome(51, 150);
+	biomes[2] = new AquaticBiome(151, 199);
 }
 
 Level::~Level()
 {
-	for (int i = 0; i < height; ++i) delete[] grid[i];
-	delete[] grid;
-	for (int i = 0; i < enemyCount; i++) if(enemies[i]) delete enemies[i];
-	for (int i = 0; i < projectileCount; i++) if(projectiles[i]) delete projectiles[i];
+	for (int i = 0; i < height; ++i) delete[] blocks[i];
+	delete[] blocks;
+	
+	for (int i = 0; i < 3; ++i) delete biomes[i];
 }
+
+void Level::generateDebugLevel() { loadMockLevel(); }
 
 void Level::loadMockLevel()
 {
-	for (int i = 0; i < height; ++i) {
-		for (int j = 0; j < width; ++j) {
-			if (i == 13) grid[i][j] = 'B';
-			else if (i == 10 && (j % 12 < 4)) grid[i][j] = 'W'; 
-			else if (i == 7 && (j % 12 > 6)) grid[i][j] = 'W';
-			else if (i == 4 && (j % 15 < 3)) grid[i][j] = 'W';
-			else grid[i][j] = ' ';
-		}
-	}
-	if (enemyCount < 64) enemies[enemyCount++] = new RebelSoldier(600.0f, 770.0f);
-	if (enemyCount < 64) enemies[enemyCount++] = new RebelSoldier(1500.0f, 770.0f);
-	if (enemyCount < 64) enemies[enemyCount++] = new RebelSoldier(2500.0f, 770.0f);
+    // Allocate block grid if not already done
+    if (blocks == nullptr)
+    {
+        blocks = new Block*[height];
+        for (int r = 0; r < height; r++)
+        {
+            blocks[r] = new Block[width];
+            for (int c = 0; c < width; c++)
+            {
+                blocks[r][c].gridX         = c;
+                blocks[r][c].gridY         = r;
+                blocks[r][c].type          = BlockType::AIR;
+                blocks[r][c].isDestructible   = false;
+                blocks[r][c].isIndestructible = false;
+                blocks[r][c].isWater          = false;
+            }
+        }
+    }
+
+    // Ground row at row 15 (out of 20)
+    for (int c = 0; c < width; c++)
+    {
+        blocks[15][c].type = BlockType::GRASS;
+        blocks[15][c].isDestructible = true;
+
+        // Stone below ground
+        for (int r = 16; r < height - 1; r++)
+        {
+            blocks[r][c].type = BlockType::STONE;
+            blocks[r][c].isDestructible = true;
+        }
+        // Indestructible bedrock at bottom row
+        blocks[height-1][c].type = BlockType::INDESTRUCTIBLE;
+        blocks[height-1][c].isIndestructible = true;
+    }
+
+    // A few platforms at different heights
+    for (int c = 20; c < 30; c++) blocks[11][c].type = BlockType::STONE;
+    for (int c = 40; c < 50; c++) blocks[9][c].type  = BlockType::STONE;
+    for (int c = 60; c < 70; c++) blocks[12][c].type = BlockType::STONE;
+
+    // Load tile textures
+    grassTex.loadFromFile("Sprites/blocks/grass_block_side.png");
+    stoneTex.loadFromFile("Sprites/blocks/stone.png");
+
+    // Assign textures to blocks based on type
+    for (int r = 0; r < height; r++)
+        for (int c = 0; c < width; c++)
+        {
+            switch (blocks[r][c].type)
+            {
+                case BlockType::GRASS:
+                    blocks[r][c].init(c, r, BlockType::GRASS, &grassTex);
+                    break;
+                case BlockType::STONE:
+                    blocks[r][c].init(c, r, BlockType::STONE, &stoneTex);
+                    break;
+                case BlockType::INDESTRUCTIBLE:
+                    blocks[r][c].init(c, r, BlockType::INDESTRUCTIBLE, &stoneTex);
+                    break;
+                default: 
+                    blocks[r][c].init(c, r, BlockType::AIR, nullptr);
+                    break;
+            }
+            // Note: init() already sets the sprite texture. 
+            // We ensure scaling matches CELL_SIZE if needed.
+        }
 }
 
-void Level::addProjectile(Projectile* p)
+void Level::update(float dt, ScoreManager& score)
 {
-	if (projectileCount < 512) projectiles[projectileCount++] = p;
-	else delete p;
+	(void)score;
+	if (playerPtr) {
+		// Pass interact key state and camera offset (0 for mock)
+		entityManager.update(dt, playerPtr, false, 0.0f);
+		entityManager.cleanupInactive();
+	}
 }
 
-void Level::checkCollisions(int& score)
+void Level::draw(sf::RenderWindow& w, Camera& cam)
 {
-	for (int i = 0; i < projectileCount; i++) {
-		if (!projectiles[i]->isAlive) continue;
+	float camOX = cam.getOffsetX();
+	float camOY = cam.getOffsetY();
 
-		for (int e = 0; e < enemyCount; e++) {
-			if (enemies[e] && enemies[e]->getIsAlive()) {
-				float ex = enemies[e]->getX() + 37.0f; // Center
-				float ey = enemies[e]->getY() + 37.0f;
-				float dx = (projectiles[i]->x + 16.0f) - ex;
-				float dy = (projectiles[i]->y + 16.0f) - ey;
-				
-				if ((dx*dx + dy*dy) < 1600.0f) { // 40px radius
-					enemies[e]->takeDamage(projectiles[i]->damage);
-					if (!enemies[e]->getIsAlive()) score += enemies[e]->getScore();
-					projectiles[i]->onHit();
-					break;
-				}
-			}
+	// Draw Culling logic
+	int startCol = (int)(camOX / cellSize) - 1;
+	int endCol   = startCol + (SCREEN_W / cellSize) + 2;
+
+	if (startCol < 0) startCol = 0;
+	if (endCol >= width) endCol = width - 1;
+
+	for (int y = 0; y < height; ++y) {
+		for (int x = startCol; x <= endCol; ++x) {
+			blocks[y][x].draw(w, camOX, camOY);
+		}
+	}
+
+	// Entities
+	Enemy** enemies = entityManager.getEnemies();
+	for (int i = 0; i < entityManager.getEnemyCount(); ++i) {
+		enemies[i]->draw(w, camOX, camOY);
+	}
+	
+	Projectile** projs = entityManager.getProjectiles();
+	for (int i = 0; i < entityManager.getProjectileCount(); ++i) {
+		projs[i]->draw(w, camOX, camOY);
+	}
+}
+
+void Level::addProjectile(class Projectile* p) { entityManager.addProjectile(p); }
+void Level::addEnemy(class Enemy* e) { entityManager.addEnemy(e); }
+
+Block* Level::getBlock(int x, int y) {
+	if (x >= 0 && x < width && y >= 0 && y < height) return &blocks[y][x];
+	return nullptr;
+}
+
+void Level::destroyBlock(int x, int y, int radius) {
+	for (int i = y - radius; i <= y + radius; ++i) {
+		for (int j = x - radius; j <= x + radius; ++j) {
+			Block* b = getBlock(j, i);
+			if (b) b->destroy();
 		}
 	}
 }
 
-void Level::update(float dt, int& score)
-{
-	for (int i = 0; i < enemyCount; i++) if(enemies[i]) enemies[i]->update(dt);
-	for (int i = 0; i < projectileCount; i++) if(projectiles[i]) projectiles[i]->update(dt);
+void Level::setPlayerPtr(Soldier* p) { playerPtr = p; }
 
-	checkCollisions(score);
+EntityManager& Level::getEntityManager() { return entityManager; }
 
-	// Cleanup dead projectiles
-	for (int i = 0; i < projectileCount; ) {
-		if (!projectiles[i]->isAlive) {
-			delete projectiles[i];
-			projectiles[i] = projectiles[projectileCount - 1];
-			projectileCount--;
-		} else { i++; }
+const char** Level::getTileGrid() {
+	// Re-purposing Level grid for char** representation if needed.
+	// Since blocks is Block**, we can't directly return it as const char**.
+	// We will use a static char grid for this specific UML request context.
+	static char* rawGrid[LEVEL_HEIGHT];
+	static char actualData[LEVEL_HEIGHT][LEVEL_WIDTH];
+	for (int y = 0; y < height; ++y) {
+		for (int x = 0; x < width; ++x) {
+			actualData[y][x] = (blocks[y][x].type == BlockType::AIR) ? ' ' : '#';
+		}
+		rawGrid[y] = actualData[y];
 	}
+	return (const char**)rawGrid;
 }
-
-void Level::draw(sf::RenderWindow& window, Camera& camera)
-{
-	float camX = camera.getOffsetX();
-	float camY = camera.getOffsetY();
-
-	for (int i = 0; i < height; ++i) {
-		for (int j = 0; j < width; ++j) {
-			float screenX = (static_cast<float>(j * cellSize)) - camX;
-			if (screenX > -cellSize && screenX < 1600) {
-				if (grid[i][j] == 'B') {
-					blackSprite.setPosition(screenX, static_cast<float>(i * cellSize) - camY);
-					window.draw(blackSprite);
-				} else if (grid[i][j] == 'W') {
-					whiteSprite.setPosition(screenX, static_cast<float>(i * cellSize) - camY);
-					window.draw(whiteSprite);
-				}
-			}
-		}
-	}
-
-	for (int i = 0; i < enemyCount; i++) {
-		if (enemies[i] && enemies[i]->getIsAlive()) {
-			float wx = enemies[i]->getX(); float wy = enemies[i]->getY();
-			enemies[i]->setPosition(wx - camX, wy - camY);
-			enemies[i]->draw(window);
-			enemies[i]->setPosition(wx, wy);
-		}
-	}
-
-	for (int i = 0; i < projectileCount; i++) {
-		if (projectiles[i] && projectiles[i]->isAlive) {
-			float worldX = projectiles[i]->x; float worldY = projectiles[i]->y;
-			projectiles[i]->setPosition(worldX - camX, worldY - camY);
-			projectiles[i]->draw(window);
-			projectiles[i]->setPosition(worldX, worldY);
-		}
-	}
-}
+int Level::getWidth() const { return width; }
+int Level::getHeight() const { return height; }
+int Level::getCellSize() const { return cellSize; }
