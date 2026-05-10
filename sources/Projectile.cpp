@@ -5,15 +5,18 @@ Projectile::Projectile()
 	  projType(ProjectileType::STRAIGHT), isEnemyProjectile(false)
 {
 	active = true;
-	width = 16.0f;
-	height = 16.0f;
+	width = 6.0f;
+	height = 3.0f;
+    
+    rectShape.setSize(sf::Vector2f(width, height));
+    rectShape.setFillColor(sf::Color::Red);
 }
 
 void Projectile::draw(sf::RenderWindow& window, float camOX, float camOY)
 {
 	if (!active) return;
-	sprite.setPosition(x - camOX, y - camOY);
-	window.draw(sprite);
+	rectShape.setPosition(x - camOX, y - camOY);
+	window.draw(rectShape);
 }
 
 int Projectile::getDamage() const { return damage; }
@@ -21,7 +24,5 @@ bool Projectile::isFromPlayer() const { return fromPlayer; }
 
 void Projectile::loadTexture(const char* path)
 {
-	if (texture.loadFromFile(path)) {
-		sprite.setTexture(texture);
-	}
+    (void)path; // Placeholders ignore textures
 }

@@ -92,7 +92,12 @@ void Enemy::activateGrudge()
 	hp = maxHp * 2;
 }
 
-void Enemy::loadTexture(const char* path) { texture.loadFromFile(path); sprite.setTexture(texture); }
+void Enemy::loadTexture(const char* path) 
+{ 
+    if (texture.loadFromFile("Sprites/Enemies/green.png")) {
+        sprite.setTexture(texture); 
+    }
+}
 void Enemy::setSoundManager(SoundManager* sm) { soundManager = sm; }
 int Enemy::getScoreValue() const { return scoreValue; }
 void Enemy::setVelocityX(float vx) { velocityX = vx; }

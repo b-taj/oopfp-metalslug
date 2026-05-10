@@ -21,6 +21,8 @@ public:
 	bool	load(const char* id, const char* filePath);
 	void	play(const char* id);
 	void	playMusic(const char* file);
+	void	pauseMusic();
+	void	resumeMusic();
 	void	setUnderwater(bool u);
 
 	void	applyLowpassFilter(sf::SoundBuffer& buf);
