@@ -1,65 +1,57 @@
 # =========================
-# Visual Studio folders
+# Visual Studio
 # =========================
 .vs/
-x64/
-x86/
-Debug/
-Release/
-build/
-out/
-
-# =========================
-# Visual Studio project files
-# =========================
-*.vcxproj.user
-*.vcxproj.filters
-*.sln.docstates
-
-# Optional:
-# Uncomment if you DO NOT want to track project structure
-# *.sln
-# *.vcxproj
-
-# =========================
-# Visual Studio metadata
-# =========================
 *.VC.db
 *.VC.VC.opendb
 *.user
 *.suo
 *.log
 
+# Build folders
+x64/
+x86/
+Debug/
+Release/
+out/
+build/
+
 # =========================
-# Compiled / build files
+# SFML / C++ build artifacts
 # =========================
 *.o
 *.obj
 *.exe
 *.dll
-*.pdb
 *.ilk
+*.pdb
+*.idb
 
 # =========================
-# SFML / C++ temporary files
+# Project-specific junk
 # =========================
 oopfp_me.*
-Source.cpp
+*.tmp
+
+# =========================
+# Temporary / test files
+# =========================
 TumblePOP.cpp
+Source.cpp
 
 # =========================
-# External libraries / dependencies
-# =========================
-include/
-lib/
-
-# =========================
-# Documents (DO NOT track)
+# Documents (NOT needed in repo)
 # =========================
 *.pdf
 
 # =========================
-# System junk
+# System files
 # =========================
 .DS_Store
 Thumbs.db
+
+# =========================
+# Include/Lib (ONLY if manually copied SFML)
+# =========================
+include/
+lib/
