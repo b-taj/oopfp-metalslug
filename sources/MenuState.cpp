@@ -2,9 +2,7 @@
 #include "../headers/GameStateManager.h"
 #include <SFML/Window/Keyboard.hpp>
 
-extern GameStateManager gStateManager;
-
-MenuState::MenuState()
+MenuState::MenuState(GameStateManager* gsm) : stateManager(gsm)
 {
 	if (font.loadFromFile("Sprites/font.ttf")) {
 		title.setFont(font);
@@ -27,8 +25,11 @@ void MenuState::onEnter() {}
 void MenuState::handleEvents(sf::RenderWindow& window, sf::Event& event)
 {
 	if (event.type == sf::Event::KeyPressed) {
-		if (event.key.code == sf::Keyboard::Num1 || event.key.code == sf::Keyboard::Num2 || event.key.code == sf::Keyboard::Num3) {
-			gStateManager.changeState(GameStateID::PLAY);
+		if (event.key.code == sf::Keyboard::Num1 || event.key.code == sf::Keyboard::Num2) {
+			if (stateManager) stateManager->changeState(GameStateID::PLAY);
+		}
+		else if (event.key.code == sf::Keyboard::Num3) {
+			if (stateManager) stateManager->changeState(GameStateID::SELF_PLAY);
 		}
 	}
 }
